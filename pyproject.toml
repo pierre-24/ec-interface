@@ -49,7 +49,7 @@ dev = [
 "Source" = "https://github.com/pierre-24/ec-interface/"
 
 [project.scripts]
-# 'ec-interface' = 'vasp_opt_follows.main:main'
+'ei-make-directories' = 'ec_interface.scripts.make_directories:main'
 
 [tool.setuptools]
 packages = ['ec_interface', 'ec_interface.scripts']

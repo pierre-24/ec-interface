@@ -1,8 +1,7 @@
-import pathlib
 from typing import TextIO, Self, Iterator
 
 import schema
-from schema import Schema, And
+from schema import Schema, And, Optional
 import yaml
 
 POSITIVE_FLOAT = And(float, lambda n: n >= 0)
@@ -14,6 +13,7 @@ SCHEMA_EC_INPUT = Schema({
     'ne_added': POSITIVE_FLOAT,
     'ne_removed': POSITIVE_FLOAT,
     'step': POSITIVE_NZ_FLOAT,
+    Optional('prefix'): str
 })
 
 
@@ -21,12 +21,13 @@ class ECInputError(Exception):
     pass
 
 
-class ECInput:
-    def __init__(self, ne_pzc: float, ne_added: float, ne_removed: float, step: float):
+class ECParameters:
+    def __init__(self, ne_pzc: float, ne_added: float, ne_removed: float, step: float, prefix: str = 'EC'):
         self.ne_pzc = ne_pzc
         self.ne_added = ne_added
         self.ne_removed = ne_removed
         self.step = step
+        self.prefix = prefix
 
     def steps(self) -> Iterator[float]:
         """Give the number of electrons for each steps
@@ -49,25 +50,3 @@ class ECInput:
             raise ECInputError(str(e))
 
         return cls(**data)
-
-    def create_directories(
-            self,
-            incar_file: pathlib.Path,
-            poscar_file: pathlib.Path,
-            potcar_file: pathlib.Path,
-            kpoints_file: pathlib.Path
-    ):
-        """Create directories containing input files, ready to compute
-        """
-
-        def assert_exists(p: pathlib.Path):
-            if not p.exists():
-                raise ECInputError('`{}` does not exists'.format(p))
-
-        assert_exists(incar_file)
-        assert_exists(poscar_file)
-        assert_exists(potcar_file)
-        assert_exists(kpoints_file)
-
-
-
