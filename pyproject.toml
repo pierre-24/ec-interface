@@ -1,0 +1,61 @@
+[project]
+name = "ec-interface"
+dynamic = ["version"]
+description = "A small code to create EC interface calculations with VASP and extract the corresponding data out of them."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+
+authors = [
+  {name = "Pierre Beaujean", email = "pierre.beaujean@unamur.be" }
+]
+
+maintainers = [
+  {name = "Pierre Beaujean", email = "pierre.beaujean@unamur.be" }
+]
+
+classifiers = [
+    # For a list of valid classifiers, see https://pypi.org/classifiers/
+    "Development Status :: 3 - Alpha",
+
+    "Intended Audience :: Developers",
+
+    "License :: OSI Approved :: MIT License",
+
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3 :: Only",
+]
+
+dependencies = [
+    "numpy",
+    "h5py",
+    "pyyaml",
+    "schema",
+]
+
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "flake8-quotes",
+    "autopep8",
+    "bump2version",
+    "pytest"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/pierre-24/ec-interface"
+"Bug Reports" = "https://github.com/pierre-24/ec-interface/issues"
+"Source" = "https://github.com/pierre-24/ec-interface/"
+
+[project.scripts]
+# 'ec-interface' = 'vasp_opt_follows.main:main'
+
+[tool.setuptools]
+packages = ['ec_interface', 'ec_interface.scripts']
+
+[tool.setuptools.dynamic]
+version = {attr = "ec_interface.__version__"}
+
+[build-system]
+requires = ["setuptools>=43.0.0", "wheel"]
