@@ -4,6 +4,7 @@ Create directories for calculations
 
 import argparse
 import pathlib
+import re
 import sys
 
 from ec_interface.ec_parameters import ECParameters
@@ -44,7 +45,15 @@ def create_input_directories(directory: pathlib.Path):
     ec_parameters = ECParameters.from_yaml(ec_input_file.open())
 
     incar_content = incar_file.open().read()
-    # TODO: check INCAR!
+
+    # check content
+    to_find = ['LCHARG', 'LVHAR']
+    for keyword in to_find:
+        if not re.compile(r'{}\s*=\s*\.TRUE\.'.format(keyword)).search(incar_content):
+            raise Exception('cannot find `{} = .TRUE.` in INCAR'.format(keyword))
+
+    if re.compile(r'NELECT\s*=\s*[0-9]*').search(incar_content):
+        print('Warning: found `NELECT` in INCAR.')
 
     # create subdirs
     for n in ec_parameters.steps():
