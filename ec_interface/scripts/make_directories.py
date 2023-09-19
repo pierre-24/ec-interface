@@ -8,6 +8,7 @@ import re
 import shutil
 import sys
 
+from ec_interface.scripts import INPUT_NAME
 from ec_interface.ec_parameters import ECParameters
 
 
@@ -29,7 +30,7 @@ def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True)
 
         return p
 
-    ec_input_file = assert_exists(directory / 'ec_interface.yml')
+    ec_input_file = assert_exists(directory / INPUT_NAME)
     incar_file = assert_exists(directory / 'INCAR')
     poscar_file = assert_exists(directory / 'POSCAR')
     potcar_file = assert_exists(directory / 'POTCAR')
