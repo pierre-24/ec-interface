@@ -8,19 +8,13 @@ import re
 import shutil
 import sys
 
-from ec_interface.scripts import INPUT_NAME, get_directory
+from ec_interface.scripts import INPUT_NAME, get_directory, assert_exists
 from ec_interface.ec_parameters import ECParameters
 
 
 def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True):
     """Create directories containing input files, ready to compute
     """
-
-    def assert_exists(p: pathlib.Path):
-        if not p.exists():
-            raise FileNotFoundError('file `{}` does not exists'.format(p))
-
-        return p
 
     ec_input_file = assert_exists(directory / INPUT_NAME)
     incar_file = assert_exists(directory / 'INCAR')

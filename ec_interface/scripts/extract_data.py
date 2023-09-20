@@ -2,20 +2,75 @@ import argparse
 import pathlib
 import sys
 
+import numpy
+
 from ec_interface.ec_parameters import ECParameters
-from ec_interface.vasp_results import VaspResults
-from ec_interface.scripts import get_directory, INPUT_NAME
+from ec_interface.vasp_results import VaspResultsH5, VaspChgCar, VaspLocPot
+from ec_interface.scripts import get_directory, INPUT_NAME, assert_exists
 
 
-def extract_data_from_directory(directory: pathlib.Path):
-    """Extract the data from a calculation. Most of the results are obtained from `vaspout.h5`
+def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = True):
+    """Extract the data from a calculation.
+     Results are obtained from `vaspout.h5`, `CHGCAR` and `LOCPOT`.
     """
 
-    path_h5 = directory / 'vaspout.h5'
-    if not path_h5.exists():
-        raise FileNotFoundError('file `{}` does not exists'.format(path_h5))
+    # get free energy, number of electron and fermi energy from vaspout.h5
+    path_h5 = assert_exists(directory / 'vaspout.h5')
+    data_h5 = VaspResultsH5.from_h5(path_h5)
 
-    data_h5 = VaspResults.from_h5(path_h5)
+    # find the vaccum zone in CHGCAR
+    path_chgcar = assert_exists(directory / 'CHGCAR')
+    with path_chgcar.open() as f:
+        data_charge_density = VaspChgCar.from_file(f)
+
+    # determine where the charge density is the closest to zero
+    z_lattice_norm = numpy.linalg.norm(data_charge_density.lattice_vectors[2])
+    xy_average_charge_density = data_charge_density.xy_average()
+    z_min_charge_density_index = numpy.argmin(numpy.abs(xy_average_charge_density))
+    z_min_charge_density = z_min_charge_density_index / data_charge_density.grid_data.shape[2] * z_lattice_norm
+
+    # determine a vacuum area, and a vacuum center
+    z_coordinates = data_charge_density.positions[:, 2] * (z_lattice_norm if data_charge_density.is_direct else 1.0)
+    z_vacuum_min = numpy.min(z_coordinates)
+    z_vacuum_max = numpy.max(z_coordinates)
+
+    if z_min_charge_density < z_vacuum_min:
+        z_vacuum_min, z_vacuum_max = z_vacuum_max - z_lattice_norm, z_vacuum_min
+    else:
+        z_vacuum_min, z_vacuum_max = z_vacuum_max, z_vacuum_min + z_lattice_norm
+
+    z_vacuum_center = (z_vacuum_max + z_vacuum_min) / 2
+    if z_vacuum_center < 0:
+        z_vacuum_center += z_lattice_norm
+    if z_vacuum_center >= z_lattice_norm:
+        z_vacuum_center -= z_lattice_norm
+
+    z_vacuum_center_index = int(z_vacuum_center / z_lattice_norm * data_charge_density.grid_data.shape[2])
+
+    # determine reference potential as the value of the local potential at the vacuum center
+    path_locpot = assert_exists(directory / 'LOCPOT')
+    with path_locpot.open() as f:
+        data_local_potential = VaspLocPot.from_file(f)
+
+    xy_average_local_potential = data_local_potential.xy_average()
+    reference_potential = xy_average_local_potential[z_vacuum_center_index]
+
+    if save_averages:
+        # save chg & locpot
+        z_values = numpy.arange(len(xy_average_local_potential)) / z_lattice_norm
+
+        with (directory / 'charge_density_xy_avg.csv').open('w') as f:
+            f.write('\n'.join(
+                '{:.5f}\t{:.5f}'.format(z, chg) for z, chg in zip(z_values, xy_average_charge_density)
+            ))
+
+        with (directory / 'local_potential_xy_avg.csv').open('w') as f:
+            f.write('\n'.join(
+                '{:.5f}\t{:.5f}'.format(z, chg) for z, chg in zip(z_values, xy_average_local_potential)
+            ))
+
+    # return data
+    return data_h5.nelect, data_h5.free_energy, data_h5.fermi_energy, reference_potential
 
 
 def extract_data_from_directories(directory: pathlib.Path):
@@ -29,11 +84,28 @@ def extract_data_from_directories(directory: pathlib.Path):
     with ec_input_file.open() as f:
         ec_parameters = ECParameters.from_yaml(f)
 
-    for subdirectory in ec_parameters.directories(directory):
-        if not subdirectory.exists():
-            raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
+    with (directory / 'ec_result.csv').open('w') as f:
+        f.write(
+            'Charge\t'
+            'Free energy (eV)\t'
+            'Fermi energy (eV)\t'
+            'Ref. potential (eV)\t'
+            'Work function (V)\t'
+            'Grand potential (V)\n'
+        )
 
-        extract_data_from_directory(subdirectory)
+        for subdirectory in ec_parameters.directories(directory):
+            if not subdirectory.exists():
+                raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
+
+            nelect, free_energy, fermi_energy, ref_potential = extract_data_from_directory(subdirectory)
+            dnelect = nelect - ec_parameters.ne_pzc
+            work_function = ref_potential - fermi_energy
+            grand_potential = free_energy - dnelect * fermi_energy
+
+            f.write('{:.3f}\t{:.10e}\t{:.10e}\t{:.10e}\t{:.10e}\t{:.10e}\n'.format(
+                dnelect, free_energy, fermi_energy, ref_potential, work_function, grand_potential
+            ))
 
 
 def main():
