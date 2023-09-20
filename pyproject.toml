@@ -50,6 +50,7 @@ dev = [
 
 [project.scripts]
 'ei-make-directories' = 'ec_interface.scripts.make_directories:main'
+'ei-extract-data' = 'ec_interface.scripts.extract_data:main'
 
 [tool.setuptools]
 packages = ['ec_interface', 'ec_interface.scripts']

@@ -1,3 +1,4 @@
+import pathlib
 from typing import TextIO, Self, Iterator
 
 import schema
@@ -39,6 +40,13 @@ class ECParameters:
         while i <= stop:
             yield i
             i += self.step
+
+    def directories(self, parent: pathlib.Path) -> Iterator[pathlib.Path]:
+        """Yield the directories were the calculation are performed
+        """
+
+        for n in self.steps():
+            yield parent / '{}_{:.3f}'.format(self.prefix, n)
 
     @classmethod
     def from_yaml(cls, f: TextIO) -> Self:

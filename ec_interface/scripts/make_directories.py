@@ -8,16 +8,8 @@ import re
 import shutil
 import sys
 
-from ec_interface.scripts import INPUT_NAME
+from ec_interface.scripts import INPUT_NAME, get_directory
 from ec_interface.ec_parameters import ECParameters
-
-
-def getdir(inp: str) -> pathlib.Path:
-    directory = pathlib.Path(inp)
-    if not directory.is_dir():
-        raise argparse.ArgumentTypeError('`{}` is not a valid directory'.format(directory))
-
-    return directory
 
 
 def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True):
@@ -44,11 +36,11 @@ def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True)
     assert_exists(kpoints_file)
 
     # get params
-    ec_parameters = ECParameters.from_yaml(ec_input_file.open())
+    with ec_input_file.open() as f:
+        ec_parameters = ECParameters.from_yaml(f)
 
+    # get INCAR and check content
     incar_content = incar_file.open().read()
-
-    # check content
     to_find = ['LCHARG', 'LVHAR', 'LVTOT']
     for keyword in to_find:
         if not re.compile(r'{}\s*=\s*\.TRUE\.'.format(keyword)).search(incar_content):
@@ -58,8 +50,7 @@ def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True)
         print('Warning: found `NELECT` in INCAR.')
 
     # create subdirs
-    for n in ec_parameters.steps():
-        subdirectory = directory / '{}_{:.3f}'.format(ec_parameters.prefix, n)
+    for n, subdirectory in zip(ec_parameters.steps(), ec_parameters.directories(directory)):
         subdirectory.mkdir()
 
         # copy INCAR
@@ -77,7 +68,7 @@ def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-i', '--directory', default='.', type=getdir, help='Input directory')
+    parser.add_argument('-i', '--directory', default='.', type=get_directory, help='Input directory')
     parser.add_argument('-c', '--copy-files', action='store_true', help='Copy files instead of using symlinks')
     args = parser.parse_args()
 
