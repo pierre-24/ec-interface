@@ -10,7 +10,7 @@ POSITIVE_NZ_FLOAT = And(float, lambda n: n > 0)
 
 
 SCHEMA_EC_INPUT = Schema({
-    'ne_pzc': POSITIVE_NZ_FLOAT,
+    'ne_zc': POSITIVE_NZ_FLOAT,
     'ne_added': POSITIVE_FLOAT,
     'ne_removed': POSITIVE_FLOAT,
     'step': POSITIVE_NZ_FLOAT,
@@ -23,8 +23,8 @@ class ECInputError(Exception):
 
 
 class ECParameters:
-    def __init__(self, ne_pzc: float, ne_added: float, ne_removed: float, step: float, prefix: str = 'EC'):
-        self.ne_pzc = ne_pzc
+    def __init__(self, ne_zc: float, ne_added: float, ne_removed: float, step: float, prefix: str = 'EC'):
+        self.ne_zc = ne_zc
         self.ne_added = ne_added
         self.ne_removed = ne_removed
         self.step = step
@@ -34,8 +34,8 @@ class ECParameters:
         """Give the number of electrons for each steps
         """
 
-        i = self.ne_pzc - self.ne_removed
-        stop = self.ne_pzc + self.ne_added
+        i = self.ne_zc - self.ne_removed
+        stop = self.ne_zc + self.ne_added
 
         while i <= stop:
             yield i

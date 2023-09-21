@@ -61,7 +61,7 @@ DUMMY_POTCAR = """
 """
 
 DUMMY_EC_INPUT = """
-ne_pzc: 160.0
+ne_zc: 160.0
 ne_added: 0.2
 ne_removed: 0.2
 step: 0.04
@@ -89,7 +89,7 @@ def basic_inputs(tmp_path, monkeypatch):
 
 
 def test_read_valid_ec_input_ok(basic_inputs):
-    ec_parameters = dict(ne_pzc=2., ne_added=0.4, ne_removed=0.2, step=0.01)
+    ec_parameters = dict(ne_zc=2., ne_added=0.4, ne_removed=0.2, step=0.01)
 
     with pathlib.Path(INPUT_NAME).open('w') as f:
         f.write(yaml.dump(ec_parameters, Dumper=yaml.Dumper))
@@ -97,7 +97,7 @@ def test_read_valid_ec_input_ok(basic_inputs):
     with pathlib.Path(INPUT_NAME).open() as f:
         ec_parms = ECParameters.from_yaml(f)
 
-    assert ec_parms.ne_pzc == ec_parameters['ne_pzc']
+    assert ec_parms.ne_zc == ec_parameters['ne_zc']
     assert ec_parms.ne_added == ec_parameters['ne_added']
     assert ec_parms.ne_removed == ec_parameters['ne_removed']
     assert ec_parms.step == ec_parameters['step']

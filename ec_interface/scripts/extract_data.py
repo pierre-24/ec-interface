@@ -99,7 +99,7 @@ def extract_data_from_directories(directory: pathlib.Path):
                 raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
 
             nelect, free_energy, fermi_energy, ref_potential = extract_data_from_directory(subdirectory)
-            dnelect = nelect - ec_parameters.ne_pzc
+            dnelect = nelect - ec_parameters.ne_zc
             work_function = ref_potential - fermi_energy
             grand_potential = free_energy - dnelect * fermi_energy
 

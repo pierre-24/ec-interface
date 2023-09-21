@@ -18,16 +18,10 @@ def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True)
 
     ec_input_file = assert_exists(directory / INPUT_NAME)
     incar_file = assert_exists(directory / 'INCAR')
-    poscar_file = assert_exists(directory / 'POSCAR')
-    potcar_file = assert_exists(directory / 'POTCAR')
-    kpoints_file = assert_exists(directory / 'KPOINTS')
 
-    # check that file exist
-    assert_exists(ec_input_file)
-    assert_exists(incar_file)
-    assert_exists(poscar_file)
-    assert_exists(potcar_file)
-    assert_exists(kpoints_file)
+    assert_exists(directory / 'POSCAR')
+    assert_exists(directory / 'POTCAR')
+    assert_exists(directory / 'KPOINTS')
 
     # get params
     with ec_input_file.open() as f:
@@ -66,7 +60,7 @@ def main():
     parser.add_argument('-c', '--copy-files', action='store_true', help='Copy files instead of using symlinks')
     args = parser.parse_args()
 
-    # get ec input info
+    # create directories
     try:
         create_input_directories(args.directory, use_symlinks=not args.copy_files)
     except Exception as e:
