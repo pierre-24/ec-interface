@@ -48,6 +48,15 @@ class ECParameters:
         for n in self.steps():
             yield parent / '{}_{:.3f}'.format(self.prefix, n)
 
+    def __str__(self):
+        return 'NELECT = {{{:.3f},{:.3f},...,{:.3f},{:.3f},...,{:.3f}}}'.format(
+            self.ne_zc - self.ne_removed,
+            self.ne_zc - self.ne_removed + self.step,
+            self.ne_zc,
+            self.ne_zc + self.step,
+            self.ne_zc + self.ne_added
+        )
+
     @classmethod
     def from_yaml(cls, f: TextIO) -> Self:
         data = yaml.load(f, Loader=yaml.Loader)

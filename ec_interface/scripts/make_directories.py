@@ -12,7 +12,7 @@ from ec_interface.scripts import INPUT_NAME, get_directory, assert_exists
 from ec_interface.ec_parameters import ECParameters
 
 
-def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True):
+def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True, verbose: bool = False):
     """Create directories containing input files, ready to compute
     """
 
@@ -27,6 +27,9 @@ def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True)
     with ec_input_file.open() as f:
         ec_parameters = ECParameters.from_yaml(f)
 
+    if verbose:
+        print('making directories with', str(ec_parameters))
+
     # get INCAR and check content
     incar_content = incar_file.open().read()
     to_find = ['LCHARG', 'LVHAR', 'LVTOT']
@@ -39,6 +42,9 @@ def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True)
 
     # create subdirs
     for n, subdirectory in zip(ec_parameters.steps(), ec_parameters.directories(directory)):
+        if verbose:
+            print(subdirectory, '...', end=' ', flush=True)
+
         subdirectory.mkdir()
 
         # copy INCAR
@@ -53,16 +59,20 @@ def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True)
             else:
                 shutil.copy(p, subdirectory / p)
 
+        if verbose:
+            print('ok', flush=True)
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-i', '--directory', default='.', type=get_directory, help='Input directory')
     parser.add_argument('-c', '--copy-files', action='store_true', help='Copy files instead of using symlinks')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose')
     args = parser.parse_args()
 
     # create directories
     try:
-        create_input_directories(args.directory, use_symlinks=not args.copy_files)
+        create_input_directories(args.directory, use_symlinks=not args.copy_files, verbose=args.verbose)
     except Exception as e:
         print('error:', e, file=sys.stderr)
 

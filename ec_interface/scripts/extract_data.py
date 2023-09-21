@@ -73,7 +73,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     return data_h5.nelect, data_h5.free_energy, data_h5.fermi_energy, reference_potential
 
 
-def extract_data_from_directories(directory: pathlib.Path):
+def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False):
     """Extract data from the directories where calculations were performed.
     """
 
@@ -83,6 +83,9 @@ def extract_data_from_directories(directory: pathlib.Path):
 
     with ec_input_file.open() as f:
         ec_parameters = ECParameters.from_yaml(f)
+
+    if verbose:
+        print('extracting data from', str(ec_parameters))
 
     with (directory / 'ec_result.csv').open('w') as f:
         f.write(
@@ -95,6 +98,9 @@ def extract_data_from_directories(directory: pathlib.Path):
         )
 
         for subdirectory in ec_parameters.directories(directory):
+            if verbose:
+                print(subdirectory, '...', end=' ', flush=True)
+
             if not subdirectory.exists():
                 raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
 
@@ -107,15 +113,19 @@ def extract_data_from_directories(directory: pathlib.Path):
                 dnelect, free_energy, fermi_energy, ref_potential, work_function, grand_potential
             ))
 
+            if verbose:
+                print('ok', flush=True)
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-i', '--directory', default='.', type=get_directory, help='Input directory')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose')
     args = parser.parse_args()
 
     # extract data
     try:
-        extract_data_from_directories(args.directory)
+        extract_data_from_directories(args.directory, verbose=args.verbose)
     except Exception as e:
         print('error:', e, file=sys.stderr)
 
