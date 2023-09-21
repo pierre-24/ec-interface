@@ -87,34 +87,47 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
     if verbose:
         print('extracting data from', str(ec_parameters))
 
+    data = []
+
+    for subdirectory in ec_parameters.directories(directory):
+        if verbose:
+            print(subdirectory, '...', end=' ', flush=True)
+
+        if not subdirectory.exists():
+            raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
+
+        nelect, free_energy, fermi_energy, ref_potential = extract_data_from_directory(subdirectory)
+        dnelect = nelect - ec_parameters.ne_zc
+        work_function = ref_potential - fermi_energy
+        grand_potential = free_energy - dnelect * fermi_energy
+
+        data_pot = [dnelect, free_energy, fermi_energy, ref_potential, work_function, grand_potential]
+        data.append(data_pot)
+
+        if verbose:
+            print('ok', flush=True)
+
+    # create and save dataframe
+    data_frame = numpy.array(data)
+
     with (directory / 'ec_result.csv').open('w') as f:
         f.write(
             'Charge\t'
-            'Free energy (eV)\t'
-            'Fermi energy (eV)\t'
-            'Ref. potential (eV)\t'
-            'Work function (V)\t'
-            'Grand potential (V)\n'
+            'Free energy [eV]\t'
+            'Fermi energy [eV]\t'
+            'Ref. potential [eV]\t'
+            'Work function [V]\t'
+            'Grand potential [V]\n'
         )
 
-        for subdirectory in ec_parameters.directories(directory):
-            if verbose:
-                print(subdirectory, '...', end=' ', flush=True)
+        numpy.savetxt(f, data_frame, delimiter='\t')
 
-            if not subdirectory.exists():
-                raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
+    # if verbose, compute the capacitance
+    if verbose:
+        fit_1 = numpy.polyfit(data_frame[:, 4], data_frame[:, 0], 1)
+        fit_2 = numpy.polyfit(data_frame[:, 4], data_frame[:, 5], 2)
 
-            nelect, free_energy, fermi_energy, ref_potential = extract_data_from_directory(subdirectory)
-            dnelect = nelect - ec_parameters.ne_zc
-            work_function = ref_potential - fermi_energy
-            grand_potential = free_energy - dnelect * fermi_energy
-
-            f.write('{:.3f}\t{:.10e}\t{:.10e}\t{:.10e}\t{:.10e}\t{:.10e}\n'.format(
-                dnelect, free_energy, fermi_energy, ref_potential, work_function, grand_potential
-            ))
-
-            if verbose:
-                print('ok', flush=True)
+        print('Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential)'.format(-fit_1[0], -fit_2[0] * 2))
 
 
 def main():
