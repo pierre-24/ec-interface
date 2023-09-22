@@ -12,7 +12,8 @@ from ec_interface.scripts import INPUT_NAME, get_directory, assert_exists
 from ec_interface.ec_parameters import ECParameters
 
 
-def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True, verbose: bool = False):
+def create_input_directories(
+        directory: pathlib.Path, use_symlinks: bool = True, verbose: bool = False, force: bool = True):
     """Create directories containing input files, ready to compute
     """
 
@@ -44,6 +45,9 @@ def create_input_directories(directory: pathlib.Path, use_symlinks: bool = True,
     for n, subdirectory in zip(ec_parameters.steps(), ec_parameters.directories(directory)):
         if verbose:
             print(subdirectory, '...', end=' ', flush=True)
+
+        if force and subdirectory.exists():
+            shutil.rmtree(subdirectory)
 
         subdirectory.mkdir()
 

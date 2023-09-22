@@ -34,12 +34,13 @@ class ECParameters:
         """Give the number of electrons for each steps
         """
 
-        i = self.ne_zc - self.ne_removed
-        stop = self.ne_zc + self.ne_added
+        start = self.ne_zc - self.ne_removed
+        charges_to_add = self.ne_removed + self.ne_added
+        i = 0
 
-        while i <= stop:
-            yield i
-            i += self.step
+        while i * self.step <= charges_to_add:
+            yield start + i * self.step
+            i += 1
 
     def directories(self, parent: pathlib.Path) -> Iterator[pathlib.Path]:
         """Yield the directories were the calculation are performed
