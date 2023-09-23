@@ -97,19 +97,39 @@ class Geometry:
             selective_dynamics=selective_dynamics_arr
         )
 
-    def get_z_coordinates(self) -> numpy.ndarray:
-        """Get z **carthesian** coordinates"""
+    def z_coordinates(self) -> numpy.ndarray:
+        """Get z **carthesian** coordinates
+        """
 
         if self.is_direct:
             return self.positions[:, 2] * self.lattice_vectors[2, 2]
         else:
             return self.positions[:, 2]
 
-    def change_interslab_distance(self, d: float) -> Self:
-        """Change interslab distance (c axis)
+    def interslab_distance(self) -> float:
+        """Assume that the geometry is a slab (along c) and compute the interslab distance
         """
 
-        z_positions = self.get_z_coordinates()
+        if self.is_direct:
+            return (self.positions[:, 2].min() + 1 - self.positions[:, 2].max()) * self.lattice_vectors[2, 2]
+        else:
+            return self.positions[:, 2].min() + self.lattice_vectors[2, 2] - self.positions[:, 2].max()
+
+    def slab_thickness(self) -> float:
+        """Assume that the geometry is a slab (along c) and compute the thickness of said slab
+        """
+
+        value = self.positions[:, 2].max() - self.positions[:, 2].min()
+        if self.is_direct:
+            value *= self.lattice_vectors[2, 2]
+
+        return value
+
+    def change_interslab_distance(self, d: float) -> Self:
+        """Assume that the geometry is a slab and change interslab distance (c axis).
+        """
+
+        z_positions = self.z_coordinates()
 
         # set at zero:
         z_positions -= numpy.min(z_positions)

@@ -30,7 +30,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     z_min_charge_density = z_min_charge_density_index / data_charge_density.grid_data.shape[2] * z_lattice_norm
 
     # determine a vacuum area, and a vacuum center
-    z_coordinates = data_charge_density.geometry.get_z_coordinates()
+    z_coordinates = data_charge_density.geometry.z_coordinates()
     z_vacuum_min = numpy.min(z_coordinates)
     z_vacuum_max = numpy.max(z_coordinates)
 
