@@ -41,7 +41,7 @@ The following paragraph contains the standard way of getting a grand potential c
 
 To perform an EC interface calculation, you need the following files in the same directory:
 
-1. An `INCAR` file. In order to compute the information required for the EC calculation, it should at least contain the following instruction:
+1. An `INCAR` file. In order to compute the information required for the EC calculation, it should at least contain the following instructions:
    ```
    LCHARG = .TRUE.
    LVHAR = .TRUE.
@@ -84,7 +84,7 @@ Note that the slab is z-centered by the procedure.
 Then, create a `ec_interface.yml`.
 You can start from the following:
 ```yaml
-ne_zc: xx        # this is the number of electrons of you system
+ne_zc: 21        # this is the number of electrons in your system
 ne_added: 0.05   # number of electron (charge) to add
 ne_removed: 0.05 # number of electron to remove
 step: 0.01       # step for adding/removing electrons
@@ -129,6 +129,15 @@ At the end of the procedre, a `ec_results.csv` file should be created, which con
 + The corresponding grand potential value.
 
 Please refer to [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237) (and reference therein) for the different information that you can extract from those data, such as the capacitance, etc.
+
+### 4. Example
+
+See [this archive](https://drive.google.com/file/d/1HFlmgWcWCMEvs9JPN1-g1YMOqZQKEz3v/view?usp=drive_link), which contains an example of calculation on a Li (100) slab using the PBM approach, inspired by [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237).
+It gives the following curve:
+
+![](https://i.ibb.co/PCmfBGh/work-function-vs-grand-potential.jpg)
+
+A capacitance of 0.0535 e/V is extracted from this curve using its second derivative.
 
 ## Contribute
 
