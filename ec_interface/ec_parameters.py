@@ -2,18 +2,18 @@ import pathlib
 from typing import TextIO, Self, Iterator
 
 import schema
-from schema import Schema, And, Optional
+from schema import Schema, And, Optional, Or
 import yaml
 
-POSITIVE_FLOAT = And(float, lambda n: n >= 0)
-POSITIVE_NZ_FLOAT = And(float, lambda n: n > 0)
+POSITIVE_NUMBER = Or(And(float, lambda n: n >= 0), And(int, lambda n: n >= 0))
+POSITIVE_NZ_NUMBER = Or(And(float, lambda n: n > 0), And(int, lambda n: n > 0))
 
 
 SCHEMA_EC_INPUT = Schema({
-    'ne_zc': POSITIVE_NZ_FLOAT,
-    'ne_added': POSITIVE_FLOAT,
-    'ne_removed': POSITIVE_FLOAT,
-    'step': POSITIVE_NZ_FLOAT,
+    'ne_zc': POSITIVE_NZ_NUMBER,
+    'ne_added': POSITIVE_NUMBER,
+    'ne_removed': POSITIVE_NUMBER,
+    'step': POSITIVE_NZ_NUMBER,
     Optional('prefix'): str
 })
 
