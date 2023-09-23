@@ -49,6 +49,7 @@ dev = [
 "Source" = "https://github.com/pierre-24/ec-interface/"
 
 [project.scripts]
+'ei-set-vacuum' = 'ec_interface.scripts.set_vacuum:main'
 'ei-make-directories' = 'ec_interface.scripts.make_directories:main'
 'ei-extract-data' = 'ec_interface.scripts.extract_data:main'
 

@@ -24,13 +24,13 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
         data_charge_density = VaspChgCar.from_file(f)
 
     # determine where the charge density is the closest to zero
-    z_lattice_norm = numpy.linalg.norm(data_charge_density.lattice_vectors[2])
+    z_lattice_norm = numpy.linalg.norm(data_charge_density.geometry.lattice_vectors[2])
     xy_average_charge_density = data_charge_density.xy_average()
     z_min_charge_density_index = numpy.argmin(numpy.abs(xy_average_charge_density))
     z_min_charge_density = z_min_charge_density_index / data_charge_density.grid_data.shape[2] * z_lattice_norm
 
     # determine a vacuum area, and a vacuum center
-    z_coordinates = data_charge_density.positions[:, 2] * (z_lattice_norm if data_charge_density.is_direct else 1.0)
+    z_coordinates = data_charge_density.geometry.get_z_coordinates()
     z_vacuum_min = numpy.min(z_coordinates)
     z_vacuum_max = numpy.max(z_coordinates)
 
@@ -125,9 +125,13 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
     # if verbose, compute the capacitance
     if verbose:
         fit_1 = numpy.polyfit(data_frame[:, 4], data_frame[:, 0], 1)
+        cap_1 = -fit_1[0]
         fit_2 = numpy.polyfit(data_frame[:, 4], data_frame[:, 5], 2)
+        cap_2 = -fit_2[0] * 2
 
-        print('Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential)'.format(-fit_1[0], -fit_2[0] * 2))
+        print('Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential), Vacuum fraction: {:.3f}'.format(
+            cap_1, cap_2, cap_2 / cap_1
+        ))
 
 
 def main():

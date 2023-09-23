@@ -5,6 +5,8 @@ import math
 
 from typing import TextIO, List
 
+from ec_interface.vasp_geometry import Geometry
+
 
 class VaspResultsH5:
     def __init__(self, nelect: float, free_energy: float, fermi_energy: float):
@@ -27,44 +29,15 @@ class VaspResultGrid:
 
     def __init__(
         self,
-        lattice_vectors:
-        numpy.ndarray,
-        symbols: List[str],
-        positions: numpy.ndarray,
+        geometry: Geometry,
         grid_data: numpy.ndarray,
-        is_direct: bool = True
     ):
-        self.lattice_vectors = lattice_vectors
-        self.symbols = symbols
-        self.positions = positions
-        self.is_direct = is_direct
+        self.geometry = geometry
         self.grid_data = grid_data
 
     @classmethod
     def from_file(cls, f: TextIO):
-        f.readline()  # skip title
-
-        # get lattice vectors
-        scaling = float(f.readline())
-        lattice_vectors = scaling * numpy.array([[float(x) for x in f.readline().split()] for _ in range(3)])
-
-        ion_types = f.readline().split()
-        ion_numbers = [int(x) for x in f.readline().split()]  # skip ion numbers
-
-        ions = []
-        for ion_type, ion_number in zip(ion_types, ion_numbers):
-            ions.extend([ion_type] * ion_number)
-
-        is_direct = f.readline().strip()[0].lower() == 'd'
-
-        # get geometry
-        geometry = []
-        line = f.readline()
-        while line.strip() != '':
-            geometry.append([float(x) for x in line.split()])
-            line = f.readline()
-
-        positions = numpy.array(geometry)
+        geometry = Geometry.from_poscar(f)
 
         # get points
         grid_size = tuple(int(x) for x in f.readline().split())
@@ -79,7 +52,7 @@ class VaspResultGrid:
         # data are stored in the format (Z, Y, X), so it is reversed here:
         grid_data = numpy.array(points).reshape(tuple(reversed(grid_size))).T
 
-        return cls(lattice_vectors, ions, positions, grid_data, is_direct=is_direct)
+        return cls(geometry, grid_data)
 
     def xy_average(self) -> List[float]:
         """Get an average of the value along Z"""
