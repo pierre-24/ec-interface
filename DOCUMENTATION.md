@@ -25,7 +25,7 @@ To use this package, you need to have a running VASP version, compiled [with HDF
 This code has been tested with VASP 6.3.2 and 6.4.1.
 If you want to perform liquid phase calculations (either with the Poisson-Boltzmann or Homogeneous Background approaches), you also need to compile VASP with [VASPsol](https://github.com/henniggroup/VASPsol) (by following the intruction in their repository).
 
-Finally, to install this package, you need a running Python 3 installation (Python 3.11 recommended), and
+Finally, to install this package, you need a running Python 3 installation (Python >= 3.10 recommended), and
 
 ```bash
 pip3 install git+https://github.com/pierre-24/ec-interface.git
@@ -178,7 +178,7 @@ make install
     make test
     ```
     
-    Indeed, the code follows the [PEP-8 style recommendations](http://legacy.python.org/dev/peps/pep-0008/), checked by [`flake8`](https://flake8.pycqa.org/en/latest/), for the python part and use [`jshint`](https://jshint.com/) for the JS part.
+    Indeed, the code follows the [PEP-8 style recommendations](http://legacy.python.org/dev/peps/pep-0008/), checked by [`flake8`](https://flake8.pycqa.org/en/latest/).
     Having an extensive test suite is also a good idea to prevent regressions.
 
 + Pull requests should be unitary, and include unit test(s) and documentation if needed. 
