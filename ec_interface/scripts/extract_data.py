@@ -59,10 +59,11 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     if save_averages:
         # save chg & locpot
         z_values = numpy.arange(nZ) / nZ * z_lattice_norm
-
         with (directory / 'charge_density_xy_avg.csv').open('w') as f:
+
             f.write('\n'.join(
-                '{:.5f}\t{:.5f}'.format(z, chg / nZ) for z, chg in zip(z_values, xy_average_charge_density)
+                '{:.5f}\t{:.5e}\t{:.5e}\t{:.5e}'.format(z, chg, chg / nZ, chgs / nZ)
+                for z, chg, chgs in zip(z_values, xy_average_charge_density, numpy.cumsum(xy_average_charge_density))
             ))
 
         with (directory / 'local_potential_xy_avg.csv').open('w') as f:

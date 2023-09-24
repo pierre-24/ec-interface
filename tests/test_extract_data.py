@@ -60,4 +60,6 @@ def test_extract_data(basic_inputs):
     # check charge density (sum should be equal to total charge)
     with (subdirectory / 'charge_density_xy_avg.csv').open() as f:
         data = numpy.loadtxt(f)
-        assert data[:, 1].sum() == pytest.approx(nelect, 0.01)
+        assert data[:, 1].sum() / 360 == pytest.approx(nelect, 0.01)  # from chgcar
+        assert data[:, 2].sum() == pytest.approx(nelect, 0.01)  # charge at z-position
+        assert data[-1, 3] == pytest.approx(nelect, 0.01)  # cumulative sum
