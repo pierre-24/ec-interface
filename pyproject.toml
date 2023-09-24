@@ -3,7 +3,7 @@ name = "ec-interface"
 dynamic = ["version"]
 description = "A small code to create EC interface calculations with VASP and extract the corresponding data out of them."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 
 authors = [
