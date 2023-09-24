@@ -1,6 +1,6 @@
 import numpy
 
-from typing import List, TextIO, Self
+from typing import List, TextIO
 
 
 class Geometry:
@@ -125,7 +125,7 @@ class Geometry:
 
         return value
 
-    def change_interslab_distance(self, d: float) -> Self:
+    def change_interslab_distance(self, d: float) -> 'Geometry':
         """Assume that the geometry is a slab and change interslab distance (c axis).
         """
 
