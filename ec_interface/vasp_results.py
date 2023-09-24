@@ -36,7 +36,7 @@ class VaspResultGrid:
         self.grid_data = grid_data
 
     @classmethod
-    def from_file(cls, f: TextIO):
+    def from_file(cls, f: TextIO) -> 'VaspResultGrid':
         geometry = Geometry.from_poscar(f)
 
         # get points

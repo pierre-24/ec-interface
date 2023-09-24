@@ -1,5 +1,5 @@
 import pathlib
-from typing import TextIO, Self, Iterator
+from typing import TextIO, Iterator
 
 import schema
 from schema import Schema, And, Optional, Or
@@ -59,7 +59,7 @@ class ECParameters:
         )
 
     @classmethod
-    def from_yaml(cls, f: TextIO) -> Self:
+    def from_yaml(cls, f: TextIO) -> 'ECParameters':
         data = yaml.load(f, Loader=yaml.Loader)
 
         try:
