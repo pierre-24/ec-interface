@@ -66,6 +66,8 @@ To perform an EC interface calculation, you need the following files in the same
    LAMBDA_D_K = 1.5 ! for PBM, remove if HBM.
    ```
    Refer to [the VASP manual](https://www.vasp.at/wiki/index.php/The_VASP_Manual), [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237), and the [VASPsol](https://github.com/henniggroup/VASPsol/blob/master/docs/USAGE.md) documentation for more details on these parameters and their values.
+   
+   You might also want to increase the value of `NELM` (it may be more difficult to converge those calculations, especially with PCM) and `NBANDS` (all bands might get occupied as you add electrons).
 2. A `POSCAR` file (which contains a slab geometry) and its corresponding `POTCAR`.
    [PAW potentials](https://www.vasp.at/wiki/index.php/Available_PAW_potentials) are strongly recommended.
 3. A `KPOINTS` file.
@@ -93,8 +95,9 @@ step: 0.01       # step for adding/removing electrons
 The value of `ne_zc` is the number of electrons that your system normally contains (which depends on the potential).
 Check, e.g., for `NELECT` in a VASP output.
 
-The value for `ne_added` and `ne_removed` depends on the capacitance of your systems, but they should not be very large (~10⁻⁴ e Å⁻² [to be multiplied by the slab surface], as recommended in [10.1021/acs.jctc.5b00170](https://dx.doi.org/10.1021/acs.jctc.5b00170)).
-Adjust `step` accordingly.
+Adjust `step`: it should be of ~10⁻⁴ e Å⁻², to be multiplied by twice the slab surface, as recommended in [10.1021/acs.jctc.5b00170](https://dx.doi.org/10.1021/acs.jctc.5b00170).
+Then, pick a value for `ne_added` and `ne_removed`, which should be multiple of `step`. 
+Note that their values depend on the capacitance of your system... But they should not be large, since the corresponding change of potential should be withing acceptable range (see, e.g., [10.1088/1361-648X/ac0207](https://dx.doi.org/10.1088/1361-648X/ac0207) for more details).
 
 Finally, you can create the inputs for the calculation using:
 ```bash
