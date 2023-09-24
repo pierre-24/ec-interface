@@ -132,7 +132,7 @@ Please refer to [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01
 
 ### 4. Example
 
-See [this archive](https://drive.google.com/file/d/1HFlmgWcWCMEvs9JPN1-g1YMOqZQKEz3v/view?usp=drive_link), which contains an example of calculation on a Li (100) slab using the PBM approach, inspired by [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237).
+See [this archive](https://drive.google.com/file/d/1TkLHsbzXJz_slb6X06r1NbkHko73-fin/view?usp=drive_link), which contains an example of calculation on a Li (100) slab using the PBM approach, inspired by [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237).
 It gives the following curve:
 
 ![](https://i.ibb.co/PCmfBGh/work-function-vs-grand-potential.jpg)

@@ -24,10 +24,11 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
         data_charge_density = VaspChgCar.from_file(f)
 
     # determine where the charge density is the closest to zero
+    nZ = data_charge_density.grid_data.shape[2]
     z_lattice_norm = numpy.linalg.norm(data_charge_density.geometry.lattice_vectors[2])
     xy_average_charge_density = data_charge_density.xy_average()
     z_min_charge_density_index = numpy.argmin(numpy.abs(xy_average_charge_density))
-    z_min_charge_density = z_min_charge_density_index / data_charge_density.grid_data.shape[2] * z_lattice_norm
+    z_min_charge_density = z_min_charge_density_index / nZ * z_lattice_norm
 
     # determine a vacuum area, and a vacuum center
     z_coordinates = data_charge_density.geometry.z_coordinates()
@@ -45,7 +46,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     if z_vacuum_center >= z_lattice_norm:
         z_vacuum_center -= z_lattice_norm
 
-    z_vacuum_center_index = int(z_vacuum_center / z_lattice_norm * data_charge_density.grid_data.shape[2])
+    z_vacuum_center_index = int(z_vacuum_center / z_lattice_norm * nZ)
 
     # determine reference potential as the value of the local potential at the vacuum center
     path_locpot = assert_exists(directory / 'LOCPOT')
@@ -57,7 +58,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
 
     if save_averages:
         # save chg & locpot
-        z_values = numpy.arange(len(xy_average_local_potential)) / z_lattice_norm
+        z_values = numpy.arange(nZ) / nZ * z_lattice_norm
 
         with (directory / 'charge_density_xy_avg.csv').open('w') as f:
             f.write('\n'.join(
