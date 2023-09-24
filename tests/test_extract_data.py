@@ -1,5 +1,6 @@
 import pathlib
 
+import numpy
 import pytest
 import zipfile
 
@@ -55,3 +56,8 @@ def test_extract_data(basic_inputs):
         local_potential = VaspLocPot.from_file(f)
         xy_avg = local_potential.xy_average()
         assert xy_avg[0] == pytest.approx(ref_potential)  # potential at z=0 is more or less the ref
+
+    # check charge density (sum should be equal to total charge)
+    with (subdirectory / 'charge_density_xy_avg.csv').open() as f:
+        data = numpy.loadtxt(f)
+        assert data[:, 1].sum() == pytest.approx(nelect, 0.01)
