@@ -1,3 +1,7 @@
+"""
+Change the interslab distance
+"""
+
 import argparse
 import sys
 
@@ -5,7 +9,7 @@ from ec_interface.vasp_geometry import Geometry
 
 
 def get_arguments_parser():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument('infile', help='source', type=argparse.FileType('r'))
     parser.add_argument('-v', '--vacuum', type=float, default=5.0)

@@ -26,6 +26,8 @@ class Geometry:
         for ion_type, ion_number in zip(ion_types, ion_numbers):
             self.ions.extend([ion_type] * ion_number)
 
+        self._cartesian_coordinates = None
+
     def __len__(self):
         return sum(self.ion_numbers)
 
@@ -97,39 +99,36 @@ class Geometry:
             selective_dynamics=selective_dynamics_arr
         )
 
-    def z_coordinates(self) -> numpy.ndarray:
-        """Get z **carthesian** coordinates
+    def cartesian_coordinates(self) -> numpy.ndarray:
+        """Convert to cartesian coordinates if any
         """
+        if self._cartesian_coordinates is None:  # cache
+            if self.is_direct:
+                self._cartesian_coordinates = numpy.einsum('ij,jk->ij', self.positions, self.lattice_vectors)
+            else:
+                self._cartesian_coordinates = self.positions
 
-        if self.is_direct:
-            return self.positions[:, 2] * self.lattice_vectors[2, 2]
-        else:
-            return self.positions[:, 2]
+        return self._cartesian_coordinates
 
     def interslab_distance(self) -> float:
-        """Assume that the geometry is a slab (along c) and compute the interslab distance
+        """Assume that the geometry is a slab and compute the interslab distance
         """
 
-        if self.is_direct:
-            return (self.positions[:, 2].min() + 1 - self.positions[:, 2].max()) * self.lattice_vectors[2, 2]
-        else:
-            return self.positions[:, 2].min() + self.lattice_vectors[2, 2] - self.positions[:, 2].max()
+        z_coo = self.cartesian_coordinates()[:, 2]
+        return z_coo.min() - z_coo.max() + self.lattice_vectors[2, 2]
 
     def slab_thickness(self) -> float:
-        """Assume that the geometry is a slab (along c) and compute the thickness of said slab
+        """Assume that the geometry is a slab (along z) and compute the thickness of said slab
         """
 
-        value = self.positions[:, 2].max() - self.positions[:, 2].min()
-        if self.is_direct:
-            value *= self.lattice_vectors[2, 2]
-
-        return value
+        z_coo = self.cartesian_coordinates()[:, 2]
+        return z_coo.max() - z_coo.min()
 
     def change_interslab_distance(self, d: float) -> 'Geometry':
-        """Assume that the geometry is a slab and change interslab distance (c axis).
+        """Assume that the geometry is a slab (along z) and change interslab distance (c axis).
         """
 
-        z_positions = self.z_coordinates()
+        z_positions = self.cartesian_coordinates()[:, 2]
 
         # set at zero:
         z_positions -= numpy.min(z_positions)

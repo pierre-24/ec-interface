@@ -70,14 +70,22 @@ To perform an EC interface calculation, you need the following files in the same
    You might also want to increase the value of `NELM` (it may be more difficult to converge those calculations, especially with PCM) and `NBANDS` (all bands might get occupied as you add electrons).
 2. A `POSCAR` file (which contains a slab geometry) and its corresponding `POTCAR`.
    [PAW potentials](https://www.vasp.at/wiki/index.php/Available_PAW_potentials) are strongly recommended.
+
+   **It is assumed that the C lattice vector matches the Z axis.**
 3. A `KPOINTS` file.
 4. A `ec_interface.yml` file (see below).
 
-To adjust the inter-slab distance, you can use `ei-set-vacuum`, which creates a new geometry while enforcing vacuum size (i.e., the size of the last lattice vector).
+You can get info about a slab by runnning `ei-check-slab`:
+```bash
+ei-check-slab POSCAR
+```
+Among others, the interslab distance (i.e., the vacuum between two repetition of the slab) should be adjusted (see [10.1021/acs.jctc.5b00170](https://dx.doi.org/10.1021/acs.jctc.5b00170)).
+
+To adjust the interslab distance, you can use `ei-set-vacuum`, which creates a new geometry while enforcing vacuum size (i.e., the size of the last lattice vector).
 For example, to adjust the vacuum size to 25 Å:
 ```bash
-mv INCAR INCAR_old
-ei-set-vacuum INCAR_old -v 25.0 -o INCAR
+mv POSCAR IPOSCAR_old
+ei-set-vacuum POSCAR_old -v 25.0 -o POSCAR
 ```
 The new geometry is saved in `INCAR`.
 There should be enough vacuum to get an accurate value for the reference (vacuum) potential, which is used to compute the work function.
