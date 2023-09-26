@@ -67,7 +67,7 @@ To perform an EC interface calculation, you need the following files in the same
    ```
    Refer to [the VASP manual](https://www.vasp.at/wiki/index.php/The_VASP_Manual), [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237), and the [VASPsol](https://github.com/henniggroup/VASPsol/blob/master/docs/USAGE.md) documentation for more details on these parameters and their values.
    
-   You might also want to increase the value of `NELM` (it may be more difficult to converge those calculations, especially with PCM) and `NBANDS` (all bands might get occupied as you add electrons).
+   You might also want to increase the value of `NELM` (it may be more difficult to converge those calculations, especially with PCM), `NBANDS` (all bands might get parrtially occupied as you add electrons), and `LREAL` (as VASP is generally complaining).
 2. A `POSCAR` file (which contains a slab geometry) and its corresponding `POTCAR`.
    [PAW potentials](https://www.vasp.at/wiki/index.php/Available_PAW_potentials) are strongly recommended.
 
