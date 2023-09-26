@@ -84,7 +84,7 @@ Among others, the interslab distance (i.e., the vacuum between two repetition of
 To adjust the interslab distance, you can use `ei-set-vacuum`, which creates a new geometry while enforcing vacuum size (i.e., the size of the last lattice vector).
 For example, to adjust the vacuum size to 25 Å:
 ```bash
-mv POSCAR IPOSCAR_old
+mv POSCAR POSCAR_old
 ei-set-vacuum POSCAR_old -v 25.0 -o POSCAR
 ```
 The new geometry is saved in `INCAR`.
