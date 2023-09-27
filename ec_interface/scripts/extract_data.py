@@ -26,14 +26,16 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     path_h5 = assert_exists(directory / 'vaspout.h5')
     _outverb('  - Reading', path_h5, end='... ', flush=True)
     data_h5 = VaspResultsH5.from_h5(path_h5)
-    _outverb('Ok')
+    _outverb('OK')
+
+    _outverb('  → NELECT = {:.3f} [e]'.format(data_h5.nelect))
 
     # find the vaccum zone in CHGCAR
     path_chgcar = assert_exists(directory / 'CHGCAR')
     _outverb('  - Reading', path_chgcar, end='... ', flush=True)
     with path_chgcar.open() as f:
         data_charge_density = VaspChgCar.from_file(f)
-    _outverb('Ok')
+    _outverb('OK')
 
     # determine where the charge density is the closest to zero
     nZ = data_charge_density.grid_data.shape[2]
@@ -43,7 +45,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     xy_average_charge_density = data_charge_density.xy_average()
     z_min_charge_density_index = numpy.argmin(numpy.abs(xy_average_charge_density))
 
-    _outverb('  → Charge density is minimal at z = {:.3f} (n = {:.3e} [e Å³])'.format(
+    _outverb('  → Charge density is minimal at z = {:.3f} (n.V = {:.3e} [e Å³])'.format(
         z_min_charge_density_index * z_inc, xy_average_charge_density[z_min_charge_density_index]))
 
     # determine a vacuum area, and a vacuum center
@@ -69,16 +71,18 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     _outverb('  - Reading', path_locpot, end='... ', flush=True)
     with path_locpot.open() as f:
         data_local_potential = VaspLocPot.from_file(f)
-    _outverb('Ok')
+    _outverb('OK')
 
     xy_average_local_potential = data_local_potential.xy_average()
     reference_potential = xy_average_local_potential[z_vacuum_center_index]
     _outverb('  → Reference potential (z={:.3f}) = {:.3f} [eV]'.format(
         z_vacuum_center_index * z_inc, reference_potential))
 
+    _outverb('  → Corresponding work function = {:.3f} [V]'.format(reference_potential - data_h5.fermi_energy))
+
     if save_averages:
         # save chg & locpot
-        _outverb('  - Writing xy-average charge and potential', end='... ', flush=True)
+        _outverb('  - Writing xy-averaged charge and potential', end='... ', flush=True)
 
         z_values = numpy.arange(nZ) / nZ * z_max
         with (directory / 'charge_density_xy_avg.csv').open('w') as f:
@@ -93,7 +97,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
                 '{:.5f}\t{:.5f}'.format(z, chg) for z, chg in zip(z_values, xy_average_local_potential)
             ))
 
-        _outverb('Ok')
+        _outverb('OK')
 
     # return data
     return data_h5.nelect, data_h5.free_energy, data_h5.fermi_energy, reference_potential
@@ -152,7 +156,7 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
 
         numpy.savetxt(f, data_frame, delimiter='\t')
 
-    _outverb('Ok')
+    _outverb('OK')
 
     # if verbose, compute the capacitance
     if verbose:
@@ -161,7 +165,7 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
         fit_2 = numpy.polyfit(data_frame[:, 4], data_frame[:, 5], 2)
         cap_2 = -fit_2[0] * 2
 
-        print('Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential), Vacuum fraction: {:.3f}'.format(
+        print('→ Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential), Vacuum fraction: {:.3f}'.format(
             cap_1, cap_2, cap_2 / cap_1
         ))
 
