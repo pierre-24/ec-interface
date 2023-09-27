@@ -67,7 +67,7 @@ To perform an EC interface calculation, you need the following files in the same
    ```
    Refer to [the VASP manual](https://www.vasp.at/wiki/index.php/The_VASP_Manual), [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237), and the [VASPsol](https://github.com/henniggroup/VASPsol/blob/master/docs/USAGE.md) documentation for more details on these parameters and their values.
    
-   You might also want to increase the value of `NELM` (it may be more difficult to converge those calculations, especially with PCM) and `NBANDS` (all bands might get occupied as you add electrons).
+   You might also want to increase the value of `NELM` (it may be more difficult to converge those calculations, especially with PCM), `NBANDS` (all bands might get parrtially occupied as you add electrons), and `LREAL` (as VASP is generally complaining).
 2. A `POSCAR` file (which contains a slab geometry) and its corresponding `POTCAR`.
    [PAW potentials](https://www.vasp.at/wiki/index.php/Available_PAW_potentials) are strongly recommended.
 
@@ -84,7 +84,7 @@ Among others, the interslab distance (i.e., the vacuum between two repetition of
 To adjust the interslab distance, you can use `ei-set-vacuum`, which creates a new geometry while enforcing vacuum size (i.e., the size of the last lattice vector).
 For example, to adjust the vacuum size to 25 Å:
 ```bash
-mv POSCAR IPOSCAR_old
+mv POSCAR POSCAR_old
 ei-set-vacuum POSCAR_old -v 25.0 -o POSCAR
 ```
 The new geometry is saved in `INCAR`.
