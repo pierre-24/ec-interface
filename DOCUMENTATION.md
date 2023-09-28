@@ -87,9 +87,14 @@ For example, to adjust the vacuum size to 25 Å:
 mv POSCAR POSCAR_old
 ei-set-vacuum POSCAR_old -v 25.0 -o POSCAR
 ```
-The new geometry is saved in `INCAR`.
+The new geometry is saved in `POSCAR`.
 There should be enough vacuum to get an accurate value for the reference (vacuum) potential, which is used to compute the work function.
 Note that the slab is z-centered by the procedure.
+
+You can get the number of electron that your system contains with `ei-get-nzc`:
+```bash
+ei-get-nzc POSCAR -p POTCAR
+```
 
 Then, create a `ec_interface.yml`.
 You can start from the following:
@@ -101,9 +106,9 @@ step: 0.01       # step for adding/removing electrons
 ```
 
 The value of `ne_zc` is the number of electrons that your system normally contains (zero charge).
-Check, e.g., for `NELECT` in a preliminary VASP output.
+Check, e.g., for `NELECT` in a preliminary VASP output, or the output of `ei-get-nzc`.
 
-Adjust `step`: it should be of ~10⁻⁴ e Å⁻², to be multiplied by twice the slab surface, as recommended in [10.1021/acs.jctc.5b00170](https://dx.doi.org/10.1021/acs.jctc.5b00170).
+Adjust `step`: it should be ~10⁻⁴ e Å⁻², to be multiplied by (twice) the slab surface, as recommended in [10.1021/acs.jctc.5b00170](https://dx.doi.org/10.1021/acs.jctc.5b00170).
 Then, pick a value for `ne_added` and `ne_removed`, which should be a multiple of `step`. 
 Note that their values depend on the capacitance of your system... But they should not be large, since the corresponding change of potential should be within the acceptable range (see, e.g., [10.1088/1361-648X/ac0207](https://dx.doi.org/10.1088/1361-648X/ac0207) for more details).
 

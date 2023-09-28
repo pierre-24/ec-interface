@@ -1,6 +1,26 @@
 import numpy
 
-from typing import List, TextIO
+from typing import List, TextIO, Dict
+
+
+def get_zvals(f: TextIO) -> Dict[str, float]:
+    """Extract the number of valence electron in a POTCAR file
+    """
+    lines = f.readlines()
+    zvals = {}
+
+    current_element = None
+    for line in lines:
+        if 'VRHFIN' in line:
+            current_element = line[line.find('=') + 1:line.find(':')]
+        if 'ZVAL' in line:
+            start = line.find('ZVAL')
+            start = line.find('=', start)
+            value = float(line[start + 1:start + 8])
+
+            zvals[current_element] = value
+
+    return zvals
 
 
 class Geometry:
@@ -162,3 +182,14 @@ class Geometry:
             is_direct=self.is_direct,
             selective_dynamics=self.selective_dynamics
         )
+
+    def nelect(self, f: TextIO) -> float:
+        """Read out the number of valence electrons from a POTCAR (`f`)
+        and compute the corresponding number of electrons in the system.
+        """
+        zvals = get_zvals(f)
+        nelect = 0
+        for n, symbol in zip(self.ion_numbers, self.ion_types):
+            nelect += n * zvals[symbol]
+
+        return nelect

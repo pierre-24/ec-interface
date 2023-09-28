@@ -50,6 +50,7 @@ dev = [
 
 [project.scripts]
 'ei-check-slab' = 'ec_interface.scripts.check_slab:main'
+'ei-get-nzc' = 'ec_interface.scripts.get_nzc:main'
 'ei-set-vacuum' = 'ec_interface.scripts.set_vacuum:main'
 'ei-make-directories' = 'ec_interface.scripts.make_directories:main'
 'ei-extract-data' = 'ec_interface.scripts.extract_data:main'

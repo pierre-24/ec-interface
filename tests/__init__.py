@@ -51,7 +51,8 @@ Monkhorst Pack
 """
 
 DUMMY_POTCAR = """
-***REDACTED***
+   VRHFIN =Li: s1p0
+   POMASS =    7.010; ZVAL   =    1.000    mass and valenz
 """
 
 DUMMY_EC_INPUT = """
