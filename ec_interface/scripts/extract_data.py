@@ -74,11 +74,11 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     _outverb('OK')
 
     xy_average_local_potential = data_local_potential.xy_average()
-    reference_potential = xy_average_local_potential[z_vacuum_center_index]
-    _outverb('  → Reference potential (z={:.3f}) = {:.3f} [eV]'.format(
-        z_vacuum_center_index * z_inc, reference_potential))
+    vacuum_potential = xy_average_local_potential[z_vacuum_center_index]
+    _outverb('  → Vacuum potential (z={:.3f}) = {:.3f} [eV]'.format(
+        z_vacuum_center_index * z_inc, vacuum_potential))
 
-    _outverb('  → Corresponding work function = {:.3f} [V]'.format(reference_potential - data_h5.fermi_energy))
+    _outverb('  → Corresponding work function = {:.3f} [V]'.format(vacuum_potential - data_h5.fermi_energy))
 
     if save_averages:
         # save chg & locpot
@@ -100,7 +100,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
         _outverb('OK')
 
     # return data
-    return data_h5.nelect, data_h5.free_energy, data_h5.fermi_energy, reference_potential
+    return data_h5.nelect, data_h5.free_energy, data_h5.fermi_energy, vacuum_potential
 
 
 def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False):
@@ -129,12 +129,12 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
         if not subdirectory.exists():
             raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
 
-        nelect, free_energy, fermi_energy, ref_potential = extract_data_from_directory(subdirectory, verbose=verbose)
+        nelect, free_energy, fermi_energy, vacuum_potential = extract_data_from_directory(subdirectory, verbose=verbose)
         dnelect = nelect - ec_parameters.ne_zc
-        work_function = ref_potential - fermi_energy
+        work_function = vacuum_potential - fermi_energy
         grand_potential = free_energy - dnelect * fermi_energy
 
-        data_pot = [dnelect, free_energy, fermi_energy, ref_potential, work_function, grand_potential]
+        data_pot = [nelect, free_energy, fermi_energy, vacuum_potential, work_function, dnelect, grand_potential]
         data.append(data_pot)
 
     _outverb('-' * 50)
@@ -146,11 +146,12 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
 
     with (directory / 'ec_result.csv').open('w') as f:
         f.write(
-            'Charge\t'
+            'NELECT\t'
             'Free energy [eV]\t'
             'Fermi energy [eV]\t'
             'Ref. potential [eV]\t'
             'Work function [V]\t'
+            'Charge [e]\t'
             'Grand potential [V]\n'
         )
 
@@ -160,9 +161,9 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
 
     # if verbose, compute the capacitance
     if verbose:
-        fit_1 = numpy.polyfit(data_frame[:, 4], data_frame[:, 0], 1)
+        fit_1 = numpy.polyfit(data_frame[:, 4], data_frame[:, 5], 1)  # charge vs work function
         cap_1 = -fit_1[0]
-        fit_2 = numpy.polyfit(data_frame[:, 4], data_frame[:, 5], 2)
+        fit_2 = numpy.polyfit(data_frame[:, 4], data_frame[:, 6], 2)  # grand pot vs work function
         cap_2 = -fit_2[0] * 2
 
         print('→ Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential), Vacuum fraction: {:.3f}'.format(

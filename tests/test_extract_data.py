@@ -32,7 +32,7 @@ def test_extract_data(basic_inputs):
     subdirectory = pathlib.Path('EC_{:.3f}'.format(nelect_inp))
     assert subdirectory.exists()
 
-    nelect, free_energy, fermi_energy, ref_potential = extract_data_from_directory(subdirectory)
+    nelect, free_energy, fermi_energy, vacuum_potential = extract_data_from_directory(subdirectory)
 
     # check nelect
     assert nelect == nelect_inp
@@ -55,7 +55,7 @@ def test_extract_data(basic_inputs):
     with (subdirectory / 'LOCPOT').open() as f:
         local_potential = VaspLocPot.from_file(f)
         xy_avg = local_potential.xy_average()
-        assert xy_avg[0] == pytest.approx(ref_potential)  # potential at z=0 is more or less the ref
+        assert xy_avg[0] == pytest.approx(vacuum_potential)  # potential at z=0 is more or less the ref
 
     # check charge density (sum should be equal to total charge)
     with (subdirectory / 'charge_density_xy_avg.csv').open() as f:
