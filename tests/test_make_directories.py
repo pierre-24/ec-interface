@@ -1,10 +1,8 @@
 import pathlib
 
 import pytest
-import yaml
 
 from ec_interface.scripts import INPUT_NAME
-from ec_interface.ec_parameters import ECParameters
 from ec_interface.scripts.make_directories import create_input_directories
 
 from tests import DUMMY_POSCAR, DUMMY_INCAR, DUMMY_KPOINTS, DUMMY_POTCAR, DUMMY_EC_INPUT
@@ -28,21 +26,6 @@ def basic_inputs(tmp_path, monkeypatch):
 
     # set chdir, so that everything happens within temporary directory
     monkeypatch.chdir(tmp_path)
-
-
-def test_read_valid_ec_input_ok(basic_inputs):
-    ec_parameters = dict(ne_zc=2., ne_added=0.4, ne_removed=0.2, step=0.01)
-
-    with pathlib.Path(INPUT_NAME).open('w') as f:
-        f.write(yaml.dump(ec_parameters, Dumper=yaml.Dumper))
-
-    with pathlib.Path(INPUT_NAME).open() as f:
-        ec_parms = ECParameters.from_yaml(f)
-
-    assert ec_parms.ne_zc == ec_parameters['ne_zc']
-    assert ec_parms.ne_added == ec_parameters['ne_added']
-    assert ec_parms.ne_removed == ec_parameters['ne_removed']
-    assert ec_parms.step == ec_parameters['step']
 
 
 def test_create_directories_ok(basic_inputs):
