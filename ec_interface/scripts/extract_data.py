@@ -4,7 +4,6 @@ Extract data form calculations
 
 import argparse
 import pathlib
-import sys
 
 import numpy
 
@@ -126,16 +125,31 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
     for subdirectory in ec_parameters.directories(directory):
         _outverb('*', subdirectory, '...')
 
-        if not subdirectory.exists():
-            raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
+        try:
+            if not subdirectory.exists():
+                raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
 
-        nelect, free_energy, fermi_energy, vacuum_potential = extract_data_from_directory(subdirectory, verbose=verbose)
-        dnelect = nelect - ec_parameters.ne_zc
-        work_function = vacuum_potential - fermi_energy
-        grand_potential = free_energy - dnelect * fermi_energy
+            nelect, free_energy, fermi_energy, vacuum_potential = extract_data_from_directory(
+                subdirectory, verbose=verbose)
 
-        data_pot = [nelect, free_energy, fermi_energy, vacuum_potential, work_function, dnelect, grand_potential]
-        data.append(data_pot)
+            dnelect = nelect - ec_parameters.ne_zc
+            work_function = vacuum_potential - fermi_energy
+            grand_potential = free_energy - dnelect * fermi_energy
+
+            data_pot = [
+                nelect,
+                free_energy,
+                fermi_energy,
+                vacuum_potential,
+                work_function,
+                dnelect,
+                grand_potential
+            ]
+
+            data.append(data_pot)
+
+        except Exception as e:
+            print('error in {}:'.format(subdirectory), e, '→ skipped')
 
     _outverb('-' * 50)
 
@@ -178,10 +192,7 @@ def main():
     args = parser.parse_args()
 
     # extract data
-    try:
-        extract_data_from_directories(args.directory, verbose=args.verbose)
-    except Exception as e:
-        print('error:', e, file=sys.stderr)
+    extract_data_from_directories(args.directory, verbose=args.verbose)
 
 
 if __name__ == '__main__':

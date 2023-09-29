@@ -137,14 +137,15 @@ The parameters are read from `ec_interface.yml`.
 Use the `-v` option to get details about extraction.
 
 At the end of the procedure, a `ec_results.csv` file should be created, which contains the following columns:
-+ The charge added or removed to the system;
++ The number of electrons in the calculation;
 + The free energy (equal to `E0` in `OSZICAR`);
 + Fermi energy (equal to the value of `E-Fermi` in `OUTCAR`);
-+ The reference potential (almost equal to the value of `FERMI_SHIFT` reported by VASPsol);
-+ The (absolute) work function corresponding to the amount of charge added/removed (you might want to shift those value w.r.t. a reference such as the SHE);
-+ The corresponding grand potential value.
++ The vacuum potential (almost equal to the value of `FERMI_SHIFT` reported by VASPsol);
++ The (absolute) work function, as `vacuum_potential - fermi_energy` (you might want to shift those value w.r.t. a reference such as the SHE);
++ The charge added or removed to the system;
++ The corresponding grand potential value, as `free_energy - dn * work_function`.
 
-Please refer to [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237) (and reference therein) for different information that you can extract from those data, such as the capacitance, etc.
+Please refer to [10.1039/c9cp06684e](https://doi.org/10.1021/10.1039/c9cp06684e) (and reference therein) for different information that you can extract from those data, such as the capacitance, the fukui functions, etc.
 
 ### 4. Example
 
