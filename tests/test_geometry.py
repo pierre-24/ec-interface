@@ -1,6 +1,7 @@
 import io
 from io import StringIO
 
+import numpy
 import pytest
 
 from ec_interface.vasp_geometry import Geometry, get_zvals
@@ -16,8 +17,33 @@ def test_open_geometry():
 
     assert geometry.ion_types == ['Li']
     assert geometry.ion_numbers == [7]
-    assert geometry.positions.shape == (7, 3)
-    assert geometry.is_direct
+    assert geometry._cartesian_coordinates.shape == (7, 3)
+
+
+def test_direct_to_cartesian():
+    cell = numpy.array([
+        [3., 0., 0.],
+        [1.5, 3., 0.],
+        [.25, .25, 5.]
+    ])
+
+    direct_coos = numpy.array([
+        [.5, .25, 0.],
+        [.75, .5, .25],
+        [.5, .75, .5],
+        [.25, .5, .75],
+    ])
+
+    f = StringIO()
+
+    geometry_from_direct = Geometry('test', cell, ['C'], [4, ], direct_coos, True)
+    assert numpy.allclose(geometry_from_direct._direct_coordinates, direct_coos)
+
+    geometry_from_direct.to_poscar(f, direct=False)
+    f.seek(0)
+
+    geometry_from_cartesian = Geometry.from_poscar(f)
+    assert numpy.allclose(geometry_from_cartesian._direct_coordinates, direct_coos)
 
 
 def test_change_vacuum():

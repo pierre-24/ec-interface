@@ -15,6 +15,7 @@ def get_arguments_parser():
     parser.add_argument('-v', '--vacuum', type=float, default=5.0)
 
     parser.add_argument('-o', '--poscar', type=argparse.FileType('w'), default=sys.stdout)
+    parser.add_argument('-C', '--cartesian', action='store_true', help='Output in cartesian coordinates')
 
     return parser
 
@@ -25,7 +26,7 @@ def main():
     geometry = Geometry.from_poscar(args.infile)
     new_geometry = geometry.change_interslab_distance(args.vacuum)
 
-    args.poscar.write(str(new_geometry))
+    new_geometry.to_poscar(args.poscar, direct=not args.cartesian)
 
 
 if __name__ == '__main__':

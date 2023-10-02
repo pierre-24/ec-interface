@@ -25,21 +25,19 @@ def get_zvals(f: TextIO) -> Dict[str, float]:
 
 class Geometry:
     def __init__(
-            self,
-            title: str,
-            lattice_vectors: numpy.ndarray,
-            ion_types: List[str],
-            ion_numbers: List[int],
-            positions: numpy.ndarray,
-            is_direct: bool = True,
-            selective_dynamics: numpy.array = None
+        self,
+        title: str,
+        lattice_vectors: numpy.ndarray,
+        ion_types: List[str],
+        ion_numbers: List[int],
+        positions: numpy.ndarray,
+        is_direct: bool = True,
+        selective_dynamics: numpy.array = None
     ):
         self.title = title
         self.lattice_vectors = lattice_vectors
         self.ion_types = ion_types
         self.ion_numbers = ion_numbers
-        self.positions = positions
-        self.is_direct = is_direct
         self.selective_dynamics = selective_dynamics
 
         self.ions = []
@@ -47,11 +45,25 @@ class Geometry:
             self.ions.extend([ion_type] * ion_number)
 
         self._cartesian_coordinates = None
+        self._direct_coordinates = None
+
+        if is_direct:
+            self._direct_coordinates = positions.copy()
+            self._cartesian_coordinates = numpy.einsum('ij,jk->ik', positions, self.lattice_vectors)
+        else:
+            self._cartesian_coordinates = positions.copy()
+            self._direct_coordinates = numpy.einsum('ij,jk->ik', positions, numpy.linalg.inv(self.lattice_vectors))
 
     def __len__(self):
         return sum(self.ion_numbers)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        return self.as_poscar()
+
+    def as_poscar(self, direct: bool = True) -> str:
+        """Get a representation as in a POSCAR, using direct coordinates or not.
+        """
+
         r = '{}\n1.0\n'.format(self.title)
         r += '\n'.join('{: 16.12f} {: 16.12f} {: 16.12f}'.format(*self.lattice_vectors[i]) for i in range(3))
         r += '\n{}\n{}\n'.format(' '.join(self.ion_types), ' '.join(str(x) for x in self.ion_numbers))
@@ -59,19 +71,26 @@ class Geometry:
         if self.selective_dynamics is not None:
             r += 'Selective dynamics\n'
 
-        if self.is_direct:
+        if direct:
             r += 'Direct\n'
+            p = self._direct_coordinates
         else:
             r += 'Carthesian\n'
+            p = self._cartesian_coordinates
 
         for i in range(len(self)):
-            r += '{: 16.12f} {: 16.12f} {: 16.12f}'.format(*self.positions[i])
+            r += '{: 16.12f} {: 16.12f} {: 16.12f}'.format(*p[i])
             if self.selective_dynamics is not None:
                 r += ' {} {} {}'.format(*('T' if x else 'F' for x in self.selective_dynamics[i]))
 
             r += ' {}\n'.format(self.ions[i])
 
         return r
+
+    def to_poscar(self, f: TextIO, direct: bool = True):
+        """Write a POSCAR in `f`
+        """
+        f.write(self.as_poscar(direct=direct))
 
     @classmethod
     def from_poscar(cls, f: TextIO):
@@ -122,13 +141,14 @@ class Geometry:
     def cartesian_coordinates(self) -> numpy.ndarray:
         """Convert to cartesian coordinates if any
         """
-        if self._cartesian_coordinates is None:  # cache
-            if self.is_direct:
-                self._cartesian_coordinates = numpy.einsum('ij,jk->ij', self.positions, self.lattice_vectors)
-            else:
-                self._cartesian_coordinates = self.positions
 
         return self._cartesian_coordinates
+
+    def direct_coordinates(self) -> numpy.ndarray:
+        """Convert to cartesian coordinates if any
+        """
+
+        return self._direct_coordinates
 
     def interslab_distance(self) -> float:
         """Assume that the geometry is a slab and compute the interslab distance
@@ -144,7 +164,7 @@ class Geometry:
         z_coo = self.cartesian_coordinates()[:, 2]
         return z_coo.max() - z_coo.min()
 
-    def change_interslab_distance(self, d: float) -> 'Geometry':
+    def change_interslab_distance(self, d: float, direct: bool = True) -> 'Geometry':
         """Assume that the geometry is a slab (along z) and change interslab distance (c axis).
         """
 
@@ -163,12 +183,12 @@ class Geometry:
         z_positions += d / 2
 
         # create a new geometry
-        new_positions = self.positions.copy()
-
-        if self.is_direct:
-            new_positions[:, 2] = z_positions / z_lattice_norm
+        if direct:
+            p = self._direct_coordinates.copy()
+            p[:, 2] = z_positions / z_lattice_norm
         else:
-            new_positions[:, 2] = z_positions
+            p = self._cartesian_coordinates.copy()
+            p[:, 2] = z_positions
 
         new_lattice_vectors = self.lattice_vectors.copy()
         new_lattice_vectors[2] = [.0, .0, z_lattice_norm]
@@ -178,8 +198,8 @@ class Geometry:
             new_lattice_vectors,
             self.ion_types,
             self.ion_numbers,
-            new_positions,
-            is_direct=self.is_direct,
+            p,
+            is_direct=direct,
             selective_dynamics=self.selective_dynamics
         )
 
