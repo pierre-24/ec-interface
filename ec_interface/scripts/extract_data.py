@@ -28,6 +28,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     _outverb('OK')
 
     _outverb('  → NELECT = {:.3f} [e]'.format(data_h5.nelect))
+    _outverb('  → Fermi energy = {:.3f} [V]'.format(data_h5.fermi_energy))
 
     # find the vaccum zone in CHGCAR
     path_chgcar = assert_exists(directory / 'CHGCAR')
@@ -42,18 +43,21 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     z_inc = z_max / nZ
 
     xy_average_charge_density = data_charge_density.xy_average()
-    z_min_charge_density_index = numpy.argmin(numpy.abs(xy_average_charge_density))
+    z_min_charge_density_index = numpy.argmin(xy_average_charge_density)
+    z_charge_density_value = xy_average_charge_density[z_min_charge_density_index]
 
     _outverb('  → Charge density is minimal at z = {:.3f} (n.V = {:.3e} [e Å³])'.format(
-        z_min_charge_density_index * z_inc, xy_average_charge_density[z_min_charge_density_index]))
+        z_min_charge_density_index * z_inc, z_charge_density_value))
 
     # determine a vacuum area, and a vacuum center
     z_vacuum_max_index = z_vacuum_min_index = z_min_charge_density_index
 
-    while xy_average_charge_density[z_vacuum_max_index - int(z_vacuum_max_index / nZ) * nZ] < 1e-3:
+    while numpy.abs(
+            xy_average_charge_density[z_vacuum_max_index - int(z_vacuum_max_index / nZ) * nZ] - z_charge_density_value
+    ) < 1e-3:
         z_vacuum_max_index += 1
 
-    while xy_average_charge_density[z_vacuum_min_index] < 1e-3:
+    while numpy.abs(xy_average_charge_density[z_vacuum_min_index] - z_charge_density_value) < 1e-3:
         z_vacuum_min_index -= 1
 
     z_vacuum_center_index = int((z_vacuum_min_index + z_vacuum_max_index) / 2)
@@ -77,6 +81,9 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     _outverb('  → Vacuum potential (z={:.3f}) = {:.3f} [eV]'.format(
         z_vacuum_center_index * z_inc, vacuum_potential))
 
+    average_potential = numpy.sum(xy_average_local_potential) / z_max
+    _outverb('  → Average potential in cell = {:.3f} [eV]'.format(average_potential))
+
     _outverb('  → Corresponding work function = {:.3f} [V]'.format(vacuum_potential - data_h5.fermi_energy))
 
     if save_averages:
@@ -99,7 +106,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
         _outverb('OK')
 
     # return data
-    return data_h5.nelect, data_h5.free_energy, data_h5.fermi_energy, vacuum_potential
+    return data_h5.nelect, data_h5.free_energy, data_h5.fermi_energy, vacuum_potential, average_potential
 
 
 def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False):
@@ -129,7 +136,7 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
             if not subdirectory.exists():
                 raise FileNotFoundError('directory `{}` does not exists'.format(subdirectory))
 
-            nelect, free_energy, fermi_energy, vacuum_potential = extract_data_from_directory(
+            nelect, free_energy, fermi_energy, vacuum_potential, average_potential = extract_data_from_directory(
                 subdirectory, verbose=verbose)
 
             dnelect = nelect - ec_parameters.ne_zc
@@ -141,6 +148,7 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
                 free_energy,
                 fermi_energy,
                 vacuum_potential,
+                average_potential,
                 work_function,
                 dnelect,
                 grand_potential
@@ -163,7 +171,8 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
             'NELECT\t'
             'Free energy [eV]\t'
             'Fermi energy [eV]\t'
-            'Ref. potential [eV]\t'
+            'Vacuum potential [eV]\t'
+            'Average potential [eV]\t'
             'Work function [V]\t'
             'Charge [e]\t'
             'Grand potential [V]\n'
