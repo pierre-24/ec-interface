@@ -81,7 +81,7 @@ def extract_data_from_directory(directory: pathlib.Path, save_averages: bool = T
     _outverb('  → Vacuum potential (z={:.3f}) = {:.3f} [eV]'.format(
         z_vacuum_center_index * z_inc, vacuum_potential))
 
-    average_potential = numpy.sum(xy_average_local_potential) / z_max
+    average_potential = numpy.sum(xy_average_local_potential) / nZ
     _outverb('  → Average potential in cell = {:.3f} [eV]'.format(average_potential))
 
     _outverb('  → Corresponding work function = {:.3f} [V]'.format(vacuum_potential - data_h5.fermi_energy))
