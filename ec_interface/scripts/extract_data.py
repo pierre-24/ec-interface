@@ -184,9 +184,9 @@ def extract_data_from_directories(directory: pathlib.Path, verbose: bool = False
 
     # if verbose, compute the capacitance
     if verbose:
-        fit_1 = numpy.polyfit(data_frame[:, 4], data_frame[:, 5], 1)  # charge vs work function
+        fit_1 = numpy.polyfit(data_frame[:, 5], data_frame[:, 6], 1)  # charge vs work function
         cap_1 = -fit_1[0]
-        fit_2 = numpy.polyfit(data_frame[:, 4], data_frame[:, 6], 2)  # grand pot vs work function
+        fit_2 = numpy.polyfit(data_frame[:, 5], data_frame[:, 7], 2)  # grand pot vs work function
         cap_2 = -fit_2[0] * 2
 
         print('→ Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential), Vacuum fraction: {:.3f}'.format(
