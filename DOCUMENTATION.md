@@ -93,7 +93,7 @@ Note that the slab is z-centered by the procedure.
 
 You can get the number of electron that your system contains with `ei-get-nzc`:
 ```bash
-ei-get-nzc POSCAR -p POTCAR
+ei-get-nzc POSCAR POTCAR
 ```
 
 Then, create a `ec_interface.yml`.

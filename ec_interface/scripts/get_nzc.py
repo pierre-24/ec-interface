@@ -11,7 +11,7 @@ def get_arguments_parser():
     parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument('infile', help='source', type=argparse.FileType('r'))
-    parser.add_argument('-p', '--potcar', help='POTCAR file', type=argparse.FileType('r'), required=True)
+    parser.add_argument('potcar', help='POTCAR file', type=argparse.FileType('r'))
 
     return parser
 
