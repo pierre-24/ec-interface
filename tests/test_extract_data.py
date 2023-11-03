@@ -56,7 +56,7 @@ def test_extract_data(basic_inputs):
         local_potential = VaspLocPot.from_file(f)
         xy_avg = local_potential.xy_average()
         assert xy_avg[0] == pytest.approx(vacuum_pot)  # potential at z=0 is more or less the ref
-        assert numpy.sum(xy_avg) / 25.305 == pytest.approx(avg_pot, abs=1e-3)  # average
+        assert numpy.sum(xy_avg) / len(xy_avg) == pytest.approx(avg_pot, abs=1e-3)  # average
 
     # check charge density (sum should be equal to total charge)
     with (subdirectory / 'charge_density_xy_avg.csv').open() as f:

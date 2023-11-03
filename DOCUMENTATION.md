@@ -141,7 +141,7 @@ At the end of the procedure, a `ec_results.csv` file should be created, which co
 + The free energy (equal to `E0` in `OSZICAR`);
 + Fermi energy (equal to the value of `E-Fermi` in `OUTCAR`);
 + The vacuum potential (almost equal to the value of `FERMI_SHIFT` reported by VASPsol);
-+ The average potential of the unit cell (should be close to 0!);
++ The average potential of the unit cell;
 + The (absolute) work function, as `vacuum_potential - fermi_energy` (you might want to shift those value w.r.t. a reference such as the SHE);
 + The charge added or removed to the system;
 + The corresponding grand potential value, as `free_energy - dn * fermi_energy`.
