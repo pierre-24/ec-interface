@@ -141,11 +141,13 @@ At the end of the procedure, a `ec_results.csv` file should be created, which co
 + The free energy (equal to `E0` in `OSZICAR`);
 + Fermi energy (equal to the value of `E-Fermi` in `OUTCAR`);
 + The vacuum potential (almost equal to the value of `FERMI_SHIFT` reported by VASPsol);
++ The average potential of the unit cell (should be close to 0!);
 + The (absolute) work function, as `vacuum_potential - fermi_energy` (you might want to shift those value w.r.t. a reference such as the SHE);
 + The charge added or removed to the system;
-+ The corresponding grand potential value, as `free_energy - dn * work_function`.
++ The corresponding grand potential value, as `free_energy - dn * fermi_energy`.
+  Note that **this is most probably not the correct free electrochemical energy**, see [this document](white_paper/potential.pdf) for more information.
 
-Please refer to [10.1039/c9cp06684e](https://doi.org/10.1021/10.1039/c9cp06684e) (and reference therein) for different information that you can extract from those data, such as the capacitance, the fukui functions, etc.
+Please refer to [10.1039/c9cp06684e](https://doi.org/10.1021/10.1039/c9cp06684e) (and reference therein) for different information that you can extract from those data, such as the surface capacitances, the fukui functions, etc.
 
 ### 4. Example
 
