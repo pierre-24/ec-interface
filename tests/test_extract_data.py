@@ -6,7 +6,8 @@ import zipfile
 
 from ec_interface.scripts import INPUT_NAME
 from ec_interface.vasp_results import VaspLocPot
-from ec_interface.scripts.extract_data import extract_data_from_directory
+from ec_interface.ec_results import ECResults
+from ec_interface.ec_parameters import ECParameters
 
 from tests import DUMMY_EC_INPUT
 
@@ -30,37 +31,39 @@ def basic_inputs(tmp_path, monkeypatch):
 def test_extract_data(basic_inputs):
     nelect_inp = 20.99
     subdirectory = pathlib.Path('EC_{:.3f}'.format(nelect_inp))
-    assert subdirectory.exists()
 
-    nelect, free_energy, fermi_energy, vacuum_pot, avg_pot = extract_data_from_directory(subdirectory)
+    ec_parameters = ECParameters(21, 0, 0.01, step=0.01)
+    ec_results = ECResults(ec_parameters, pathlib.Path.cwd())
+
+    assert len(ec_results) == 1
 
     # check nelect
-    assert nelect == nelect_inp
+    assert ec_results.nelects[0] == nelect_inp
 
     # check fermi energy
     with (subdirectory / 'OUTCAR').open() as f:
         lines = f.readlines()
         for line in reversed(lines):
             if 'Fermi energy:' in line:
-                assert float(line[-20:]) == pytest.approx(fermi_energy)
+                assert float(line[-20:]) == pytest.approx(ec_results.fermi_energies[0])
                 break
 
     # check free energy
     with (subdirectory / 'OSZICAR').open() as f:
         lines = f.readlines()
         chunks = lines[-2].split()
-        assert float(chunks[4]) == pytest.approx(free_energy)
+        assert float(chunks[4]) == pytest.approx(ec_results.free_energies[0])
 
     # check ref & avg potential
     with (subdirectory / 'LOCPOT').open() as f:
         local_potential = VaspLocPot.from_file(f)
         xy_avg = local_potential.xy_average()
-        assert xy_avg[0] == pytest.approx(vacuum_pot)  # potential at z=0 is more or less the ref
-        assert numpy.sum(xy_avg) / len(xy_avg) == pytest.approx(avg_pot, abs=1e-3)  # average
+        assert xy_avg[0] == pytest.approx(ec_results.vacuum_potentials[0])  # potential at z=0 is more or less the ref
+        assert numpy.sum(xy_avg) / len(xy_avg) == pytest.approx(ec_results.average_potentials[0], abs=1e-3)  # average
 
     # check charge density (sum should be equal to total charge)
     with (subdirectory / 'charge_density_xy_avg.csv').open() as f:
         data = numpy.loadtxt(f)
-        assert data[:, 1].sum() / 360 == pytest.approx(nelect, 0.01)  # from chgcar
-        assert data[:, 2].sum() == pytest.approx(nelect, 0.01)  # charge at z-position
-        assert data[-1, 3] == pytest.approx(nelect, 0.01)  # cumulative sum
+        assert data[:, 1].sum() / 360 == pytest.approx(nelect_inp, 0.01)  # from chgcar
+        assert data[:, 2].sum() == pytest.approx(nelect_inp, 0.01)  # charge at z-position
+        assert data[-1, 3] == pytest.approx(nelect_inp, 0.01)  # cumulative sum
