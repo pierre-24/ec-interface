@@ -171,6 +171,25 @@ class ECResults:
         self.vacuum_potentials = numpy.array(vacuum_potentials)
         self.average_potentials = numpy.array(average_potetials)
 
+    def estimate_active_fraction(self) -> float:
+        """Estimate the active fraction from estimates of the surface capacitance.
+        """
+
+        work_function = self.vacuum_potentials - self.fermi_energies
+        dnelect = self.nelects - self.ec_parameters.ne_zc
+        fee = self.free_energies - dnelect * self.fermi_energies
+
+        fit_1 = numpy.polyfit(work_function, dnelect, 1)  # charge vs work function
+        cap_1 = -fit_1[0]
+        fit_2 = numpy.polyfit(work_function, fee, 2)  # grand pot vs work function
+        cap_2 = -fit_2[0] * 2
+
+        self._outverb('Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential), active fraction: {:.3f}'.format(
+            cap_1, cap_2, cap_2 / cap_1
+        ))
+
+        return cap_2 / cap_1
+
     def compute_fee_hbm(self, alpha: float):
         """Compute the Free electrochemical energy (grand potential) assuming a homogeneous background method
         calculation. `alpha` is the vacuum fraction.
@@ -182,7 +201,7 @@ class ECResults:
         """Compute the Free electrochemical energy (grand potential) assuming a Poisson-Boltzmann method
         calculation"""
 
-        work_function = self.fermi_energies
+        work_function = self.vacuum_potentials - self.fermi_energies
         dnelect = self.nelects - self.ec_parameters.ne_zc
         fee = self.free_energies - dnelect * work_function
 
