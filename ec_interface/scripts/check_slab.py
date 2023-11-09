@@ -27,3 +27,4 @@ def main():
     print('Slab thickness: {:.4f} Å'.format(geometry.slab_thickness()))
     print('Slab surface: {:.4f} Å²'.format(numpy.linalg.det(geometry.lattice_vectors[:2, :2])))
     print('Interslab distance: {:.4f} Å'.format(geometry.interslab_distance()))
+    print('Vacuum fraction: {:.4f}'.format(geometry.interslab_distance() / geometry.lattice_vectors[2, 2]))
