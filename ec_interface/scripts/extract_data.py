@@ -16,7 +16,20 @@ def main():
     parser.add_argument('-o', '--output', default='ec_results.csv', type=argparse.FileType('w'))
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose')
 
+    g_analysis = parser.add_mutually_exclusive_group()
+    g_analysis.add_argument('--pbm', action='store_true', help='Assume PBM approach')
+    g_analysis.add_argument(
+        '--hbm', type=float, help='Give the active fraction and assume HBM approach')
+    g_analysis.add_argument(
+        '--hbm-ideal', action='store_true', help='Compute the active fraction and assume the HBM approach')
+    g_analysis.add_argument(
+        '--hbm-fermi', action='store_true', help='Assume the HBM approach, but use the Fermi energy for work function')
+
     args = parser.parse_args()
+
+    def _outverb(*args_, **kwargs):
+        if args.verbose:
+            print(*args_, **kwargs)
 
     # get parameters
     ec_input_file = args.directory / INPUT_NAME
@@ -41,6 +54,7 @@ def main():
     dataframe = numpy.array([
         ec_results.nelects,
         ec_results.free_energies,
+        ec_results.fermi_energies,
         ec_results.vacuum_potentials,
         ec_results.average_potentials
     ])
@@ -48,13 +62,28 @@ def main():
     numpy.savetxt(args.output, dataframe.T, delimiter='\t')
 
     args.output.write(
-        '\n'
+        '\n\n'  # just skip a few lines so that it is another dataset
         'Charge [e]\t'
         'Work function [V]\t'
-        'Grand potential [V]\n'
     )
 
-    ec_results.estimate_active_fraction()
+    if args.pbm:
+        _outverb('Use PBM to estimate the FEE')
+        args.output.write('Grand potential (PBM) [V]\n')
+        numpy.savetxt(args.output, ec_results.compute_fee_pbm().T, delimiter='\t')
+    elif args.hbm:
+        _outverb('Use HBM (alpha = {}) to estimate the FEE'.format(args.hbm))
+        args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(args.hbm))
+        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=args.hbm).T, delimiter='\t')
+    elif args.hbm_ideal:
+        alpha = ec_results.estimate_active_fraction()
+        _outverb('Use HBM (alpha = {:.4f}) to estimate the FEE'.format(alpha))
+        args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(alpha))
+        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=alpha).T, delimiter='\t')
+    else:
+        _outverb('Use HBM (WF=Fermi) to estimate the FEE')
+        args.output.write('Grand potential (HBM, WF=Fermi) [V]\n')
+        numpy.savetxt(args.output, ec_results.compute_fee_hbm_fermi().T, delimiter='\t')
 
     args.output.close()
 

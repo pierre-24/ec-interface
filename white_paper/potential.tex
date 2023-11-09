@@ -6,36 +6,48 @@
 \usepackage{amsthm}
 \usepackage{nameref}
 \usepackage{hyperref}
+\usepackage{listings}
+\usepackage{hyperref}
+
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
-\title{About the computation of the free electrochemical energy}
+\title{About the computation of the free electrochemical energy with \texttt{ei-extract-data}.}
 \author{Pierre Beaujean}
 \begin{document}
 	\maketitle
 	
-	\paragraph{TL;DR:} The \texttt{ec-interface} package reports $\Omega = A_{\text{VASP}} - N_e\,E_F$, which is \textbf{an approximation} of the correct free electrochemical energy! Depending on the case, you need either Eq.~\eqref{eq:gdp-pbm} or \eqref{eq:gdp-hbm}.\\
+	\begin{abstract}
+		The program \texttt{ei-extract-data} from the \texttt{ec-interface} package,\footnote{\url{https://github.com/pierre-24/ec-interface/}} can be used to extract the free electrochemical energy of a system ($\Omega$) following the works of Prof. J.S. Filhol. 
+	\end{abstract}
 	
-	The free electrochemical energy of a system is given by:\begin{equation}
+	In theory, the free electrochemical energy (or grand potential) of a system is given by:\begin{equation}
 		\Omega(\Phi) = H(\Phi) - q\Phi,\label{eq:gdp}
 	\end{equation}
-	where $q$ is the surface charge at a given electrode potential $\Phi$ and $H(\Phi)$ is the enthalpy of the system.
-	
-	\paragraph{With the PBM approach.} According to Hagopian et al. (see Eq.~12 of \cite{hagopianAdvancementHomogeneousBackground2022}), one can introduce $N_e$ as the number of excess electron in the system and define\begin{equation}
-		\Phi(N_e) = E_V(N_e)-E_F(N_e)
+	where $q$ is the surface charge at a given electrode potential $\Phi$ and $H(\Phi)$ is the enthalpy of the system. However, introducing or removing a certain amount of electron to the system, $N_e = N - N_0$ (where $N$ is the number of electrons used in the calculation and $N_0$ is the number for the neutral system), provide a way to estimate $\Omega$. According to Hagopian et al. (see Eq.~12 and 13 of \cite{hagopianAdvancementHomogeneousBackground2022}), a good approximation is given by:\begin{equation}
+		\Omega(\Phi) = A_{\text{VASP}}(N_e) - N_e\,E_F(N_e),\label{eq:gdp-fermi}
 	\end{equation} 
-	where $E_F$ is the Fermi energy and $E_V$ is the vacuum potential (evaluated from \texttt{LOCPOT} in the vacuum between the electrodes). Within the Poisson-Boltzmann (PB) method, Eq.~\eqref{eq:gdp} becomes:\begin{equation}
-		\Omega(\Phi) = A_{\text{VASP}}(N_e) + N_e\,\Phi(N_e), \label{eq:gdp-pbm}
-	\end{equation}
-	where $A_{\text{VASP}}$ is the free energy reported by VASP (\texttt{E0} in \texttt{OSZICAR}) for a given $N_e$.
+	where $A_{\text{VASP}}$ and $E_F$ are the free (\texttt{E0} in \texttt{OSZICAR}) and Fermi energies reported by VASP for a given $N_e$, respectively. However, the ``true'' work function $\Phi$ is better approximated by:\begin{equation}
+		\Phi(N_e) = E_V(N_e)-E_F(N_e),\label{eq:phi}
+	\end{equation} 
+	where $E_V$ is the vacuum potential (evaluated from \texttt{LOCPOT} at the location of the center of the vacuum between the electrodes). These formulas are used to compute the values of $\Omega$ reported by default (or using \texttt{\lstinline|--hbm-fermi|}).
 	
-	\paragraph{With the HBM approach.} According to Kopa{\v c} Lautar et al. \cite{kopaclautarModelingInterfacialElectrochemistry2020}, given a vacuum fraction $\alpha_s$ so that $N_s = \alpha_s\,N_e$, one gets:\begin{equation}
+	\paragraph{With the PBM approach.} Within the Poisson-Boltzmann (PB) method, Eq.~\eqref{eq:gdp} becomes:\begin{equation}
+		\Omega(\Phi) = A_{\text{VASP}}(N_e) + N_e\,\Phi(N_e). \label{eq:gdp-pbm}
+	\end{equation}
+	This formula is used to compute the values of $\Omega$ reported using  \texttt{\lstinline|--pbm|}.
+	
+	\paragraph{With the HBM approach.} According to Kopa{\v c} Lautar et al. \cite{kopaclautarModelingInterfacialElectrochemistry2020}, given a fraction of active electrode $\alpha_s$ so that $N_s = \alpha_s\,N_e$, one gets:\begin{equation}
 		\Omega(\Phi) =  A_{\text{VASP}}^0 + \alpha_s\,\left\{A_{\text{VASP}}(N_e)-A_{\text{VASP}}^0+ N_e\,\Phi(N_e)-\int_0^{N_e} E_V(n)\,dn\right\}, \label{eq:gdp-hbm}
 	\end{equation}
-	where $A_{\text{VASP}}^0$ is the free energy reported by VASP without any excess electron. The integral accounts for the homogeneous background (HB) of compensating charges.\footnote{And the evolution of $E_V$ with $n$ is not linear, so this integral does not simply evaluate to $E_V(N_e)$!} One way to evaluate $\alpha_s$ is:\begin{equation*}
+	where $A_{\text{VASP}}^0$ is the free energy reported by VASP without any excess electron. The integral accounts for the homogeneous background (HB) of compensating charges.\footnote{And the evolution of $E_V$ with $n$ is not linear, so this integral does not simply evaluate to $E_V(N_e)$!} This formula is used to compute the values of $\Omega$ reported using  \texttt{\lstinline|--hbm| $\alpha_s$}.
+	
+	
+	One way to evaluate $\alpha_s$ is:\begin{equation*}
 		\alpha_s^c = \frac{d_0}{d},
 	\end{equation*}
 	where $d_0$ and $d$ are the vacuum thickness and the size of the unit cell, respectively. However, it is also possible to extract this quantity from a ratio of capacitances evaluated with two different techniques: \cite{hagopianAdvancementHomogeneousBackground2022}\begin{equation*}
-		\alpha_s = \frac{C_{\Omega\Phi}}{C_{\Phi N}}, \text{ where }  \frac{1}{C_{\Phi N}} = \left.-\frac{1}{e}\frac{\partial\Phi}{\partial N_e}\right|_{N_e=0} \text{ and } C_{\Omega\Phi} = \left.-\frac{\partial^2\Omega}{\partial\Phi^2}\right|_{N_e=0}.
+		\alpha_s = \frac{C_{\Omega\Phi}}{C_{\Phi N}}, \text{ where }  \frac{1}{C_{\Phi N}} = \left.-\frac{1}{e}\frac{\partial\Phi}{\partial N_e}\right|_{N_e=0} \text{ and } C_{\Omega\Phi} = \left.-\frac{\partial^2\Omega}{\partial\Phi^2}\right|_{N_e=0},
 	\end{equation*}
+	where $\Phi$ is evaluated using Eq.~\eqref{eq:phi}, but $\Omega$ is approximated using Eq.\eqref{eq:gdp-fermi}. When using \texttt{\lstinline|--hbm-ideal|}, this formula is used to evaluate $\alpha_s$, and then Eq.~\eqref{eq:gdp-hbm} is used to compute the values of $\Omega$.
 	
 	\bibliographystyle{unsrt}
 	\bibliography{potential}

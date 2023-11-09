@@ -184,7 +184,7 @@ class ECResults:
         fit_2 = numpy.polyfit(work_function, fee, 2)  # grand pot vs work function
         cap_2 = -fit_2[0] * 2
 
-        self._outverb('Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential), active fraction: {:.3f}'.format(
+        self._outverb('Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential), active fraction: {:.4f}'.format(
             cap_1, cap_2, cap_2 / cap_1
         ))
 
@@ -195,7 +195,41 @@ class ECResults:
         calculation. `alpha` is the vacuum fraction.
         """
 
-        pass
+        work_function = self.vacuum_potentials - self.fermi_energies
+        dnelect = self.nelects - self.ec_parameters.ne_zc
+
+        # find 0 and corresponding energy
+        index_0 = numpy.where(dnelect == .0)[0][0]
+        fe0 = self.free_energies[index_0]
+
+        # integrate vacuum potential
+        integ_average_pot = numpy.array([
+            numpy.trapz(
+                self.vacuum_potentials[
+                    i if i < index_0 else index_0:(index_0 if i < index_0 else i) + 1
+                ],
+                dx=(-1 if i < index_0 else 1) * self.ec_parameters.step
+            )
+            for i in range(len(self.vacuum_potentials))
+        ])
+
+        # get fee:
+        return numpy.array([
+            dnelect,
+            work_function,
+            fe0 + alpha * (self.free_energies - fe0 + dnelect * work_function - integ_average_pot)
+        ])
+
+    def compute_fee_hbm_fermi(self):
+        """Compute the Free electrochemical energy (grand potential) assuming a homogeneous background method
+        calculation, and use the Fermi energy as the work function.
+        """
+
+        work_function = self.vacuum_potentials - self.fermi_energies
+        dnelect = self.nelects - self.ec_parameters.ne_zc
+        fee = self.free_energies - dnelect * self.fermi_energies
+
+        return numpy.array([dnelect, work_function, fee])
 
     def compute_fee_pbm(self) -> NDArray:
         """Compute the Free electrochemical energy (grand potential) assuming a Poisson-Boltzmann method
@@ -205,4 +239,4 @@ class ECResults:
         dnelect = self.nelects - self.ec_parameters.ne_zc
         fee = self.free_energies - dnelect * work_function
 
-        return numpy.hstack(work_function, fee)
+        return numpy.array([dnelect, work_function, fee])

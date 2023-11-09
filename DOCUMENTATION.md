@@ -136,16 +136,19 @@ ei-extract-data
 The parameters are read from `ec_interface.yml`.
 Use the `-v` option to get details about extraction.
 
-At the end of the procedure, a `ec_results.csv` file should be created, which contains the following columns:
-+ The number of electrons in the calculation;
+At the end of the procedure, a `ec_results.csv` file should be created, which contains the following dataset, with:
++ The number of electrons in the calculation (`NELECT` in `INCAR`);
 + The free energy (equal to `E0` in `OSZICAR`);
-+ Fermi energy (equal to the value of `E-Fermi` in `OUTCAR`);
 + The vacuum potential (almost equal to the value of `FERMI_SHIFT` reported by VASPsol);
-+ The average potential of the unit cell;
-+ The (absolute) work function, as `vacuum_potential - fermi_energy` (you might want to shift those value w.r.t. a reference such as the SHE);
++ Fermi energy (equal to the value of `E-Fermi` in `OUTCAR`);
++ The average potential of the unit cell.
+
+And then another dataset, with:
 + The charge added or removed to the system;
-+ The corresponding grand potential value, as `free_energy - dn * fermi_energy`.
-  Note that **this is most probably not the correct free electrochemical energy**, see [this document](white_paper/potential.pdf) for more information.
++ The (absolute) work function, as `vacuum_potential - fermi_energy` (you might want to shift those value w.r.t. a reference such as the SHE);
++ The corresponding grand potential value. By default, it is computed as `free_energy - dn * fermi_energy`.
+  
+  **Note:** this might not be the correct free electrochemical energy you are looking for, and other methods are available: see [this document](white_paper/potential.pdf) for more information (TL;DR: use either `--pbm` or `--hbm xxx`, where `xxx` is the fraction of active electrons).
 
 Please refer to [10.1039/c9cp06684e](https://doi.org/10.1021/10.1039/c9cp06684e) (and reference therein) for different information that you can extract from those data, such as the surface capacitances, the fukui functions, etc.
 
