@@ -68,22 +68,22 @@ def main():
     )
 
     if args.pbm:
-        _outverb('Use PBM to estimate the FEE')
         args.output.write('Grand potential (PBM) [V]\n')
         numpy.savetxt(args.output, ec_results.compute_fee_pbm().T, delimiter='\t')
+        _outverb('Used PBM to estimate the FEE')
     elif args.hbm:
-        _outverb('Use HBM (alpha = {}) to estimate the FEE'.format(args.hbm))
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(args.hbm))
         numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=args.hbm).T, delimiter='\t')
+        _outverb('Used HBM (alpha = {}) to estimate the FEE'.format(args.hbm))
     elif args.hbm_ideal:
         alpha = ec_results.estimate_active_fraction()
-        _outverb('Use HBM (alpha = {:.4f}) to estimate the FEE'.format(alpha))
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(alpha))
         numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=alpha).T, delimiter='\t')
+        _outverb('Used HBM (alpha = {:.4f}) to estimate the FEE'.format(alpha))
     else:
-        _outverb('Use HBM (WF=Fermi) to estimate the FEE')
         args.output.write('Grand potential (HBM, WF=Fermi) [V]\n')
         numpy.savetxt(args.output, ec_results.compute_fee_hbm_fermi().T, delimiter='\t')
+        _outverb('Used HBM (WF=Fermi) to estimate the FEE')
 
     args.output.close()
 

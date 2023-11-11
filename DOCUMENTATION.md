@@ -103,6 +103,7 @@ ne_zc: 21        # this is the number of electrons in your system
 ne_added: 0.05   # number of electron (charge) to add
 ne_removed: 0.05 # number of electron to remove
 step: 0.01       # step for adding/removing electrons
+additional: []   # (optional) additional points, if required
 ```
 
 The value of `ne_zc` is the number of electrons that your system normally contains (zero charge).
@@ -116,11 +117,11 @@ Finally, you can create the inputs for the calculation using:
 ```bash
 ei-make-directories
 ```
-The parameters are read from `ec_interface.yml`.
-Use the `-v` option to get details about the creation of the different directories.
-
 Note that by default, the `POSCAR`, `POTCAR` and `KPOINTS` files are referred to by using symlinks, as they should be the same for all calculations.
-If you prefer that those files are copied, use `-c`.
+The parameters are read from `ec_interface.yml`. Additional options are:
++ `-v`: to get details about the creation of the different directories,
++ `-f`: force the re-creation of directories if existing, and
++ `-c`: copy file inside created directories, instead of using symlinks to do so.
 
 ### 2. Run VASP
 

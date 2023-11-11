@@ -1,5 +1,5 @@
 import pathlib
-from typing import TextIO, Iterator
+from typing import TextIO, Iterator, List, Optional as TOpt
 
 import schema
 from schema import Schema, And, Optional, Or
@@ -14,7 +14,8 @@ SCHEMA_EC_INPUT = Schema({
     'ne_added': POSITIVE_NUMBER,
     'ne_removed': POSITIVE_NUMBER,
     'step': POSITIVE_NZ_NUMBER,
-    Optional('prefix'): str
+    Optional('prefix'): str,
+    Optional('additional'): Or([float], None),
 })
 
 
@@ -23,12 +24,20 @@ class ECInputError(Exception):
 
 
 class ECParameters:
-    def __init__(self, ne_zc: float, ne_added: float, ne_removed: float, step: float, prefix: str = 'EC'):
+    def __init__(
+        self,
+        ne_zc: float,
+        ne_added: float,
+        ne_removed: float,
+        step: float, prefix: str = 'EC',
+        additional: TOpt[List[float]] = None,
+    ):
         self.ne_zc = ne_zc
         self.ne_added = ne_added
         self.ne_removed = ne_removed
         self.step = step
         self.prefix = prefix
+        self.additional = sorted(set(additional)) if additional is not None else []
 
     def steps(self) -> Iterator[float]:
         """Give the number of electrons for each steps
@@ -37,10 +46,25 @@ class ECParameters:
         start = self.ne_zc - self.ne_removed
         charges_to_add = self.ne_removed + self.ne_added
         i = 0
+        j = 0
 
         while i * self.step <= charges_to_add:
-            yield start + i * self.step
+            current = start + i * self.step
+
+            # yield all additionals before this step
+            while j < len(self.additional) and self.additional[j] < current:
+                yield self.additional[j]
+                j += 1
+
+            # skip if similar to the step
+            while j < len(self.additional) and self.additional[j] == current:
+                j += 1
+
+            yield current
             i += 1
+
+        # yield remaining additional, if any
+        yield from self.additional[j:]
 
     def directories(self, parent: pathlib.Path) -> Iterator[pathlib.Path]:
         """Yield the directories were the calculation are performed
@@ -50,12 +74,12 @@ class ECParameters:
             yield parent / '{}_{:.3f}'.format(self.prefix, n)
 
     def __str__(self):
-        return 'NELECT = {{{:.3f},{:.3f},...,{:.3f},{:.3f},...,{:.3f}}}'.format(
-            self.ne_zc - self.ne_removed,
-            self.ne_zc - self.ne_removed + self.step,
-            self.ne_zc,
-            self.ne_zc + self.step,
-            self.ne_zc + self.ne_added
+        return 'NELECT = {{{r}:{n}:{s}}} & {{{n}:{a}:{s}}}{adds}'.format(
+            n=self.ne_zc,
+            s=self.step,
+            r=self.ne_zc - self.ne_removed,
+            a=self.ne_zc + self.ne_added,
+            adds='' if len(self.additional) == 0 else ' & {{{}}}'.format(','.join(str(x) for x in self.additional))
         )
 
     @classmethod

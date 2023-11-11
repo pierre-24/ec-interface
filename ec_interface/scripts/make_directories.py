@@ -46,8 +46,12 @@ def create_input_directories(
         if verbose:
             print(subdirectory, '...', end=' ', flush=True)
 
-        if force and subdirectory.exists():
-            shutil.rmtree(subdirectory)
+        if subdirectory.exists():
+            if force:
+                shutil.rmtree(subdirectory)
+            else:
+                print('Directory exists, skipping')
+                continue
 
         subdirectory.mkdir()
 
@@ -72,11 +76,13 @@ def main():
     parser.add_argument('-i', '--directory', default='.', type=get_directory, help='Input directory')
     parser.add_argument('-c', '--copy-files', action='store_true', help='Copy files instead of using symlinks')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose')
+    parser.add_argument('-f', '--force', action='store_true', help='Force re-creation of directories')
     args = parser.parse_args()
 
     # create directories
     try:
-        create_input_directories(args.directory, use_symlinks=not args.copy_files, verbose=args.verbose)
+        create_input_directories(
+            args.directory, use_symlinks=not args.copy_files, verbose=args.verbose, force=args.force)
     except Exception as e:
         print('error:', e, file=sys.stderr)
 
