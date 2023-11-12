@@ -40,7 +40,7 @@ def main():
         ec_parameters = ECParameters.from_yaml(f)
 
     # extract data
-    ec_results = ECResults(ec_parameters, args.directory, verbose=args.verbose)
+    ec_results = ECResults.from_calculations(ec_parameters, args.directory, verbose=args.verbose)
 
     # write results
     args.output.write(
@@ -51,15 +51,7 @@ def main():
         'Average potential [eV]\n'
     )
 
-    dataframe = numpy.array([
-        ec_results.nelects,
-        ec_results.free_energies,
-        ec_results.fermi_energies,
-        ec_results.vacuum_potentials,
-        ec_results.average_potentials
-    ])
-
-    numpy.savetxt(args.output, dataframe.T, delimiter='\t')
+    numpy.savetxt(args.output, ec_results.data, delimiter='\t')
 
     args.output.write(
         '\n\n'  # just skip a few lines so that it is another dataset
@@ -69,20 +61,20 @@ def main():
 
     if args.pbm:
         args.output.write('Grand potential (PBM) [V]\n')
-        numpy.savetxt(args.output, ec_results.compute_fee_pbm().T, delimiter='\t')
+        numpy.savetxt(args.output, ec_results.compute_fee_pbm(), delimiter='\t')
         _outverb('Used PBM to estimate the FEE')
     elif args.hbm:
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(args.hbm))
-        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=args.hbm).T, delimiter='\t')
+        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=args.hbm), delimiter='\t')
         _outverb('Used HBM (alpha = {}) to estimate the FEE'.format(args.hbm))
     elif args.hbm_ideal:
         alpha = ec_results.estimate_active_fraction()
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(alpha))
-        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=alpha).T, delimiter='\t')
+        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=alpha), delimiter='\t')
         _outverb('Used HBM (alpha = {:.4f}) to estimate the FEE'.format(alpha))
     else:
         args.output.write('Grand potential (HBM, WF=Fermi) [V]\n')
-        numpy.savetxt(args.output, ec_results.compute_fee_hbm_fermi().T, delimiter='\t')
+        numpy.savetxt(args.output, ec_results.compute_fee_hbm_fermi(), delimiter='\t')
         _outverb('Used HBM (WF=Fermi) to estimate the FEE')
 
     args.output.close()
