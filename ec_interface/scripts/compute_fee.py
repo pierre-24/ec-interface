@@ -26,6 +26,8 @@ def main():
     g_analysis.add_argument(
         '--hbm-fermi', action='store_true', help='Assume the HBM approach, but use the Fermi energy for work function')
 
+    parser.add_argument('--shift', type=float, default=.0, help='Shift the vacuum potential')
+
     args = parser.parse_args()
     this_directory = pathlib.Path('.')
 
@@ -49,22 +51,22 @@ def main():
     args.output.write(
         '\n\n'  # just skip a few lines so that it is another dataset
         'Charge [e]\t'
-        'Work function [V]\t'
+        'Work function [V]{}\t'.format(' (shift={})'.format(args.shift) if args.shift != .0 else '')
     )
 
     if args.pbm:
         args.output.write('Grand potential (PBM) [V]\n')
-        numpy.savetxt(args.output, ec_results.compute_fee_pbm(), delimiter='\t')
+        numpy.savetxt(args.output, ec_results.compute_fee_pbm(shift=args.shift), delimiter='\t')
     elif args.hbm:
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(args.hbm))
-        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=args.hbm), delimiter='\t')
+        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=args.hbm, shift=args.shift), delimiter='\t')
     elif args.hbm_ideal:
-        alpha = ec_results.estimate_active_fraction()
+        alpha = ec_results.estimate_active_fraction(shift=args.shift)
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(alpha))
-        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=alpha), delimiter='\t')
+        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=alpha, shift=args.shift), delimiter='\t')
     else:
         args.output.write('Grand potential (HBM, WF=Fermi) [V]\n')
-        numpy.savetxt(args.output, ec_results.compute_fee_hbm_fermi(), delimiter='\t')
+        numpy.savetxt(args.output, ec_results.compute_fee_hbm_fermi(shift=args.shift), delimiter='\t')
 
     args.output.close()
 

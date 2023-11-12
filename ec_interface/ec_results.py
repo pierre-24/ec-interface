@@ -212,11 +212,11 @@ class ECResults:
 
             return cls(ec_parameters, dset[:], verbose)
 
-    def estimate_active_fraction(self) -> float:
+    def estimate_active_fraction(self, shift: float = .0) -> float:
         """Estimate the active fraction from estimates of the surface capacitance.
         """
 
-        work_function = self.vacuum_potentials - self.fermi_energies
+        work_function = self.vacuum_potentials - self.fermi_energies + shift
         dnelect = self.nelects - self.ec_parameters.ne_zc
         fee = self.free_energies - dnelect * self.fermi_energies
 
@@ -231,12 +231,12 @@ class ECResults:
 
         return cap_2 / cap_1
 
-    def compute_fee_hbm(self, alpha: float):
+    def compute_fee_hbm(self, alpha: float, shift: float = .0):
         """Compute the Free electrochemical energy (grand potential) assuming a homogeneous background method
         calculation. `alpha` is the vacuum fraction.
         """
 
-        work_function = self.vacuum_potentials - self.fermi_energies
+        work_function = self.vacuum_potentials - self.fermi_energies + shift
         dnelect = self.nelects - self.ec_parameters.ne_zc
 
         # find 0 and corresponding energy
@@ -259,22 +259,22 @@ class ECResults:
             fe0 + alpha * (self.free_energies - fe0 + dnelect * work_function - integ_average_pot)
         ]).T
 
-    def compute_fee_hbm_fermi(self):
+    def compute_fee_hbm_fermi(self, shift: float = .0):
         """Compute the Free electrochemical energy (grand potential) assuming a homogeneous background method
         calculation, and use the Fermi energy as the work function.
         """
 
-        work_function = self.vacuum_potentials - self.fermi_energies
+        work_function = self.vacuum_potentials - self.fermi_energies + shift
         dnelect = self.nelects - self.ec_parameters.ne_zc
         fee = self.free_energies - dnelect * self.fermi_energies
 
         return numpy.array([dnelect, work_function, fee]).T
 
-    def compute_fee_pbm(self) -> NDArray:
+    def compute_fee_pbm(self, shift: float = .0) -> NDArray:
         """Compute the Free electrochemical energy (grand potential) assuming a Poisson-Boltzmann method
         calculation"""
 
-        work_function = self.vacuum_potentials - self.fermi_energies
+        work_function = self.vacuum_potentials - self.fermi_energies + shift
         dnelect = self.nelects - self.ec_parameters.ne_zc
         fee = self.free_energies + dnelect * work_function
 
