@@ -3,7 +3,8 @@ import h5py
 import numpy
 import math
 
-from typing import TextIO, List
+from numpy.typing import NDArray
+from typing import TextIO
 
 from ec_interface.vasp_geometry import Geometry
 
@@ -54,7 +55,7 @@ class VaspResultGrid:
 
         return cls(geometry, grid_data)
 
-    def xy_average(self) -> List[float]:
+    def xy_average(self) -> NDArray:
         """Get an average of the value along Z"""
 
         nX, nY, nZ = self.grid_data.shape
@@ -63,7 +64,7 @@ class VaspResultGrid:
         for i in range(nZ):
             xy_avg.append(self.grid_data[:, :, i].sum() / (nX * nY))
 
-        return xy_avg
+        return numpy.array(xy_avg)
 
 
 class VaspChgCar(VaspResultGrid):

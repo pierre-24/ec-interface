@@ -153,6 +153,13 @@ And then another dataset, with:
 
 Please refer to [10.1039/c9cp06684e](https://doi.org/10.1021/10.1039/c9cp06684e) (and reference therein) for different information that you can extract from those data, such as the surface capacitances, the fukui functions, etc.
 
+Finally, in each directory, you'll find a `charge_density_xy_avg.csv` and a `local_potential_xy_avg.csv` file, which contains a XY-average of the `CHGCAR` and `LOCPOT` file, respectively: the first column contains the Z coordinates, the second correspond to the XY-averaged value times unit volume, while the third contains the plain XY-averaged value.
+You can also use `ei-xy-average` to get the same information:
+
+```bash
+ei-xy-average CHGCAR > chg.csv
+```
+
 ### 4. Example
 
 See [this archive](https://drive.google.com/file/d/1TkLHsbzXJz_slb6X06r1NbkHko73-fin/view?usp=drive_link), which contains an example of calculation on a Li (100) slab using the PBM approach, inspired by [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237).
