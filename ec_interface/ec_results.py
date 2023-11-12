@@ -1,5 +1,6 @@
 import numpy
 import pathlib
+import h5py
 
 from typing import Tuple
 from numpy.typing import NDArray
@@ -191,6 +192,25 @@ class ECResults:
     def _outverb(self, *args, **kwargs):
         if self.verbose:
             print(*args, **kwargs)
+
+    def to_hdf5(self, path: pathlib.Path):
+        """Save data in a HDF5 file"""
+
+        with h5py.File(path, 'w') as f:
+            dset = f.create_dataset('ec_results', data=self.data)
+            dset.attrs['version'] = 1
+
+    @classmethod
+    def from_hdf5(cls, ec_parameters: ECParameters, path: pathlib.Path, verbose: bool = False):
+        with h5py.File(path) as f:
+            if 'ec_results' not in f:
+                raise Exception('invalid h5 file: no `ec_results` dataset')
+
+            dset = f['ec_results']
+            if 'version' not in dset.attrs or dset.attrs['version'] > 1:
+                raise Exception('unknown version for dataset, use a more recent version of this package!')
+
+            return cls(ec_parameters, dset[:], verbose)
 
     def estimate_active_fraction(self) -> float:
         """Estimate the active fraction from estimates of the surface capacitance.

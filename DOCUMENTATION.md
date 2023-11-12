@@ -137,7 +137,25 @@ ei-extract-data
 The parameters are read from `ec_interface.yml`.
 Use the `-v` option to get details about extraction.
 
-At the end of the procedure, a `ec_results.csv` file should be created, which contains the following dataset, with:
+At the end of the procedure, a `ec_results.h5` file should be created, containing the different data (number of electrons, free and fermi energies, vacuum and average potentials) in binary form.
+
+Furthermore, in each directory, you'll find a `charge_density_xy_avg.csv` and a `local_potential_xy_avg.csv` file, which contains a XY-average of the `CHGCAR` and `LOCPOT` file, respectively: the first column contains the Z coordinates, the second correspond to the XY-averaged value times unit volume, while the third contains the plain XY-averaged value.
+Note that you can also use `ei-xy-average` to get the same information:
+
+```bash
+ei-xy-average CHGCAR > chg.csv
+```
+
+### 4. Computing the free electrochemical energy (FEE)
+
+Finally, run:
+```bash
+ei-compute-fee > results.csv
+```
+The parameters are read from `ec_interface.yml`, while the data are read from `ec_results.h5`.
+Different options can be used to compute the FEE with different methods, see below.
+
+At the end of the procedure, a `results.csv` file (containing tab-separated data) should be created, which contains the following dataset, with:
 + The number of electrons in the calculation (`NELECT` in `INCAR`);
 + The free energy (equal to `E0` in `OSZICAR`);
 + The vacuum potential (almost equal to the value of `FERMI_SHIFT` reported by VASPsol);
@@ -152,13 +170,6 @@ And then another dataset, with:
   **Note:** this might not be the correct free electrochemical energy you are looking for, and other methods are available: see [this document](white_paper/potential.pdf) for more information (TL;DR: use either `--pbm` or `--hbm xxx`, where `xxx` is the fraction of active electrons).
 
 Please refer to [10.1039/c9cp06684e](https://doi.org/10.1021/10.1039/c9cp06684e) (and reference therein) for different information that you can extract from those data, such as the surface capacitances, the fukui functions, etc.
-
-Finally, in each directory, you'll find a `charge_density_xy_avg.csv` and a `local_potential_xy_avg.csv` file, which contains a XY-average of the `CHGCAR` and `LOCPOT` file, respectively: the first column contains the Z coordinates, the second correspond to the XY-averaged value times unit volume, while the third contains the plain XY-averaged value.
-You can also use `ei-xy-average` to get the same information:
-
-```bash
-ei-xy-average CHGCAR > chg.csv
-```
 
 ### 4. Example
 

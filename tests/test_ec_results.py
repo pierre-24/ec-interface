@@ -70,17 +70,10 @@ def test_extract_data(basic_inputs):
 
 
 def test_compute_fee():
-    # note: these data are more or less reproducing the ones found in 10.1021/acs.jctc.1c01237 for Li (100) with HBM
-    with pathlib.Path(pathlib.Path(__file__).parent / 'results.csv').open() as f:
-        lines = f.readlines()
-
     ec_parameters = ECParameters(21, 0.1, 0.1, step=0.2, additional=[21.01, 21.09])
 
-    data = numpy.zeros((len(lines) - 1, 5))
-    for i, line in enumerate(lines[1:]):
-        data[i] = [float(x) for x in line.split()]
-
-    ec_results = ECResults(ec_parameters, data)
+    # note: these data are more or less reproducing the ones found in 10.1021/acs.jctc.1c01237 for Li (100) with HBM
+    ec_results = ECResults.from_hdf5(ec_parameters, pathlib.Path(pathlib.Path(__file__).parent / 'ec_results.h5'))
 
     assert ec_results.estimate_active_fraction() == pytest.approx(0.334, abs=.001)
 
@@ -88,10 +81,12 @@ def test_compute_fee():
     data_hbm_fermi = ec_results.compute_fee_hbm_fermi()
     capacitance_hbm_fermi = -numpy.polyfit(data_hbm_fermi[:, 1], data_hbm_fermi[:, 2], 2)[0] * 2
 
-    data_hbm_ideal = ec_results.compute_fee_hbm(alpha=0.334)
-    capacitance_hbm_ideal = -numpy.polyfit(data_hbm_ideal[:, 1], data_hbm_ideal[:, 2], 2)[0] * 2
+    assert capacitance_hbm_fermi == pytest.approx(0.05, abs=0.01)
 
-    assert capacitance_hbm_ideal == pytest.approx(0.05, abs=0.01)
+    data_hbm_ideal = ec_results.compute_fee_hbm(alpha=0.334)
+    assert numpy.allclose(data_hbm_ideal[:, 2], data_hbm_fermi[:, 2], rtol=1e-3)
+
+    capacitance_hbm_ideal = -numpy.polyfit(data_hbm_ideal[:, 1], data_hbm_ideal[:, 2], 2)[0] * 2
     assert capacitance_hbm_ideal == pytest.approx(capacitance_hbm_fermi, abs=0.001)
 
     # get something different (and larger!) with the estimated vacuum fraction

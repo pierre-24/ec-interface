@@ -54,6 +54,7 @@ dev = [
 'ei-set-vacuum' = 'ec_interface.scripts.set_vacuum:main'
 'ei-make-directories' = 'ec_interface.scripts.make_directories:main'
 'ei-extract-data' = 'ec_interface.scripts.extract_data:main'
+'ei-compute-fee' = 'ec_interface.scripts.compute_fee:main'
 'ei-xy-average' = 'ec_interface.scripts.make_xy_average:main'
 
 [tool.setuptools]
