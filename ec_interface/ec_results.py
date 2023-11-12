@@ -203,15 +203,13 @@ class ECResults:
         fe0 = self.free_energies[index_0]
 
         # integrate vacuum potential
-        integ_average_pot = numpy.array([
-            numpy.trapz(
-                self.vacuum_potentials[
-                    i if i < index_0 else index_0:(index_0 if i < index_0 else i) + 1
-                ],
-                dx=(-1 if i < index_0 else 1) * self.ec_parameters.step
-            )
-            for i in range(len(self.vacuum_potentials))
-        ])
+        integ_average_pot = []
+        for i in range(len(self.vacuum_potentials)):
+            b0, b1 = i if i < index_0 else index_0, (index_0 if i < index_0 else i) + 1
+            integ_average_pot.append((-1 if i < index_0 else 1) * numpy.trapz(
+                self.vacuum_potentials[b0:b1],
+                dnelect[b0:b1]
+            ))
 
         # get fee:
         return numpy.array([
