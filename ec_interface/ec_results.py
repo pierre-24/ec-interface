@@ -256,6 +256,6 @@ class ECResults:
 
         work_function = self.vacuum_potentials - self.fermi_energies
         dnelect = self.nelects - self.ec_parameters.ne_zc
-        fee = self.free_energies - dnelect * work_function
+        fee = self.free_energies + dnelect * work_function
 
         return numpy.array([dnelect, work_function, fee]).T

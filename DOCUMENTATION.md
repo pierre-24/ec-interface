@@ -162,10 +162,10 @@ ei-xy-average CHGCAR > chg.csv
 
 ### 4. Example
 
-See [this archive](https://drive.google.com/file/d/1TkLHsbzXJz_slb6X06r1NbkHko73-fin/view?usp=drive_link), which contains an example of calculation on a Li (100) slab using the PBM approach, inspired by [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237).
+See [this archive](https://drive.google.com/file/d/1TkLHsbzXJz_slb6X06r1NbkHko73-fin/view?usp=sharing), which contains an example of calculation on a Li (100) slab using the PBM approach, inspired by [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237).
 It gives the following curve:
 
-![](https://i.ibb.co/PCmfBGh/work-function-vs-grand-potential.jpg)
+![](https://i.ibb.co/hW1DsHJ/work-function-vs-grand-potential.jpg)
 
 A capacitance of 0.0535 e/V is extracted from this curve using its second derivative.
 Due to the strong anharmonicity (the curve is clearly not symmetric around PZC), the actual value should be a little smaller.
