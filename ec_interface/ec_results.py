@@ -212,7 +212,8 @@ class ECResults:
 
         work_function = self.vacuum_potentials - self.fermi_energies + shift
         dnelect = self.nelects - self.ne_zc
-        fee = self.free_energies - dnelect * self.fermi_energies
+        index_0 = numpy.where(dnelect == .0)[0][0]
+        fee = self.free_energies - dnelect * self.fermi_energies - self.average_potentials[index_0]
 
         fit_1 = numpy.polyfit(work_function, dnelect, 1)  # charge vs work function
         cap_1 = -fit_1[0]
@@ -242,12 +243,10 @@ class ECResults:
                 dnelect[b0:b1]
             ))
 
+        fee = fe0 + alpha * (self.free_energies - fe0 + dnelect * work_function - integ_average_pot)
+
         # get fee:
-        return numpy.array([
-            dnelect,
-            work_function,
-            fe0 + alpha * (self.free_energies - fe0 + dnelect * work_function - integ_average_pot)
-        ]).T
+        return numpy.array([dnelect, work_function, fee - self.average_potentials[index_0]]).T
 
     def compute_fee_hbm_fermi(self, shift: float = .0):
         """Compute the Free electrochemical energy (grand potential) assuming a homogeneous background method
@@ -257,8 +256,9 @@ class ECResults:
         work_function = self.vacuum_potentials - self.fermi_energies + shift
         dnelect = self.nelects - self.ne_zc
         fee = self.free_energies - dnelect * self.fermi_energies
+        index_0 = numpy.where(dnelect == .0)[0][0]
 
-        return numpy.array([dnelect, work_function, fee]).T
+        return numpy.array([dnelect, work_function, fee - self.average_potentials[index_0]]).T
 
     def compute_fee_pbm(self, shift: float = .0) -> NDArray:
         """Compute the Free electrochemical energy (grand potential) assuming a Poisson-Boltzmann method
@@ -267,5 +267,6 @@ class ECResults:
         work_function = self.vacuum_potentials - self.fermi_energies + shift
         dnelect = self.nelects - self.ne_zc
         fee = self.free_energies + dnelect * work_function
+        index_0 = numpy.where(dnelect == .0)[0][0]
 
-        return numpy.array([dnelect, work_function, fee]).T
+        return numpy.array([dnelect, work_function, fee - self.average_potentials[index_0]]).T
