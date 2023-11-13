@@ -2,6 +2,7 @@ import pathlib
 
 import pytest
 
+from ec_interface.ec_parameters import ECParameters
 from ec_interface.scripts import INPUT_NAME
 from ec_interface.scripts.make_directories import create_input_directories
 
@@ -29,7 +30,10 @@ def basic_inputs(tmp_path, monkeypatch):
 
 
 def test_create_directories_ok(basic_inputs):
-    create_input_directories(pathlib.Path.cwd(), use_symlinks=True)
+    with pathlib.Path(INPUT_NAME).open() as f:
+        parameters = ECParameters.from_yaml(f)
+
+    create_input_directories(parameters, use_symlinks=True)
 
     for i in range(-5, 6):
         nelect = 21. + i * 0.01
@@ -51,9 +55,12 @@ def test_create_directories_ok(basic_inputs):
 
 
 def test_create_directories_missing_files_ko(basic_inputs):
+    with pathlib.Path(INPUT_NAME).open() as f:
+        parameters = ECParameters.from_yaml(f)
+
     cwd = pathlib.Path.cwd()
 
-    files = ['INCAR', 'POTCAR', 'POSCAR', 'KPOINTS', INPUT_NAME]
+    files = ['INCAR', 'POTCAR', 'POSCAR', 'KPOINTS']
     tmpfile = cwd / '.tmp'
 
     prev = None
@@ -67,10 +74,13 @@ def test_create_directories_missing_files_ko(basic_inputs):
             prev = path
 
             path.rename(tmpfile)
-            create_input_directories(cwd, use_symlinks=True)
+            create_input_directories(parameters, use_symlinks=True)
 
 
 def test_create_directories_missing_in_incar_ko(basic_inputs):
+    with pathlib.Path(INPUT_NAME).open() as f:
+        parameters = ECParameters.from_yaml(f)
+
     cwd = pathlib.Path.cwd()
     lines = DUMMY_INCAR.splitlines()
 
@@ -82,4 +92,4 @@ def test_create_directories_missing_in_incar_ko(basic_inputs):
                     f.write(line)
 
         with pytest.raises(Exception, match=var):
-            create_input_directories(cwd, use_symlinks=True)
+            create_input_directories(parameters, use_symlinks=True)

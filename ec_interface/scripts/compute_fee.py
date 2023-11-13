@@ -4,16 +4,16 @@ Extract data form calculations
 
 import argparse
 import numpy
-import pathlib
 import sys
 
 from ec_interface.ec_results import ECResults
-from ec_interface.scripts import get_ec_parameters
+from ec_interface.scripts import get_ec_parameters, INPUT_NAME, H5_NAME
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-i', '--h5', default='ec_results.h5', help='H5 file')
+    parser.add_argument('-p', '--parameters', default=INPUT_NAME, type=get_ec_parameters)
+    parser.add_argument('-i', '--h5', default=H5_NAME, help='H5 file')
     parser.add_argument('-o', '--output', default=sys.stdout, type=argparse.FileType('w'))
 
     g_analysis = parser.add_mutually_exclusive_group()
@@ -28,13 +28,9 @@ def main():
     parser.add_argument('--shift', type=float, default=.0, help='Shift the vacuum potential')
 
     args = parser.parse_args()
-    this_directory = pathlib.Path('.')
-
-    # get parameters
-    ec_parameters = get_ec_parameters(this_directory)
 
     # extract data
-    ec_results = ECResults.from_hdf5(ec_parameters, args.h5)
+    ec_results = ECResults.from_hdf5(args.parameters.ne_zc, args.h5)
 
     # just show the data found in the H5 file
     args.output.write(

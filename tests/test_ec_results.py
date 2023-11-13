@@ -73,7 +73,7 @@ def test_compute_fee():
     ec_parameters = ECParameters(21, 0.1, 0.1, step=0.2, additional=[21.01, 21.09])
 
     # note: these data are more or less reproducing the ones found in 10.1021/acs.jctc.1c01237 for Li (100) with HBM
-    ec_results = ECResults.from_hdf5(ec_parameters, pathlib.Path(pathlib.Path(__file__).parent / 'ec_results.h5'))
+    ec_results = ECResults.from_hdf5(ec_parameters.ne_zc, pathlib.Path(pathlib.Path(__file__).parent / 'ec_results.h5'))
 
     assert ec_results.estimate_active_fraction() == pytest.approx(0.334, abs=.001)
 

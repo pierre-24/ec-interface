@@ -166,11 +166,11 @@ def _extract_data_from_directories(
 class ECResults:
     def __init__(
         self,
-        ec_parameters: ECParameters,
+        ne_zc: float,
         data: NDArray
     ):
         assert data.shape[1] == 5
-        self.ec_parameters = ec_parameters
+        self.ne_zc = ne_zc
 
         # gather data from directories
         self.data = data
@@ -182,7 +182,7 @@ class ECResults:
 
     @classmethod
     def from_calculations(cls, ec_parameters: ECParameters, directory: pathlib.Path, verbose: bool = False):
-        return cls(ec_parameters, _extract_data_from_directories(ec_parameters, directory, verbose))
+        return cls(ec_parameters.ne_zc, _extract_data_from_directories(ec_parameters, directory, verbose))
 
     def __len__(self):
         return self.nelects.shape[0]
@@ -195,7 +195,7 @@ class ECResults:
             dset.attrs['version'] = 1
 
     @classmethod
-    def from_hdf5(cls, ec_parameters: ECParameters, path: pathlib.Path):
+    def from_hdf5(cls, ne_zc: float, path: pathlib.Path):
         with h5py.File(path) as f:
             if 'ec_results' not in f:
                 raise Exception('invalid h5 file: no `ec_results` dataset')
@@ -204,14 +204,14 @@ class ECResults:
             if 'version' not in dset.attrs or dset.attrs['version'] > 1:
                 raise Exception('unknown version for dataset, use a more recent version of this package!')
 
-            return cls(ec_parameters, dset[:])
+            return cls(ne_zc, dset[:])
 
     def estimate_active_fraction(self, shift: float = .0) -> float:
         """Estimate the active fraction from estimates of the surface capacitance.
         """
 
         work_function = self.vacuum_potentials - self.fermi_energies + shift
-        dnelect = self.nelects - self.ec_parameters.ne_zc
+        dnelect = self.nelects - self.ne_zc
         fee = self.free_energies - dnelect * self.fermi_energies
 
         fit_1 = numpy.polyfit(work_function, dnelect, 1)  # charge vs work function
@@ -227,7 +227,7 @@ class ECResults:
         """
 
         work_function = self.vacuum_potentials - self.fermi_energies + shift
-        dnelect = self.nelects - self.ec_parameters.ne_zc
+        dnelect = self.nelects - self.ne_zc
 
         # find 0 and corresponding energy
         index_0 = numpy.where(dnelect == .0)[0][0]
@@ -255,7 +255,7 @@ class ECResults:
         """
 
         work_function = self.vacuum_potentials - self.fermi_energies + shift
-        dnelect = self.nelects - self.ec_parameters.ne_zc
+        dnelect = self.nelects - self.ne_zc
         fee = self.free_energies - dnelect * self.fermi_energies
 
         return numpy.array([dnelect, work_function, fee]).T
@@ -265,7 +265,7 @@ class ECResults:
         calculation"""
 
         work_function = self.vacuum_potentials - self.fermi_energies + shift
-        dnelect = self.nelects - self.ec_parameters.ne_zc
+        dnelect = self.nelects - self.ne_zc
         fee = self.free_energies + dnelect * work_function
 
         return numpy.array([dnelect, work_function, fee]).T
