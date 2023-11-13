@@ -17,7 +17,7 @@ Overview of the workflow:
 NE=$(ei-get-nzc POSCAR POTCAR)
  
 # 3. Create a YML file (you need to adapt the numbers!)
-echo -e "ne_nzc: $NE\ne_added: 0.1\ne_removed: 0.1\nstep: 0.01" > ec_interface.yml
+echo -e "ne_zc: $NE\nne_added: 0.1\nne_removed: 0.1\nstep: 0.01" > ec_interface.yml
 
 # 4. Make all directories
 ei-make-directories
