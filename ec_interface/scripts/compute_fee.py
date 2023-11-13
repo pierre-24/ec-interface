@@ -36,7 +36,7 @@ def main():
     # extract data
     ec_results = ECResults.from_hdf5(ec_parameters, args.h5)
 
-    # write results
+    # just show the data found in the H5 file
     args.output.write(
         'NELECT\t'
         'Free energy [eV]\t'
@@ -47,6 +47,7 @@ def main():
 
     numpy.savetxt(args.output, ec_results.data, delimiter='\t')
 
+    # Compute FEE:
     args.output.write(
         '\n\n'  # just skip a few lines so that it is another dataset
         'Charge [e]\t'
@@ -76,7 +77,7 @@ def main():
     args.output.write(
         '\n\n'
         'Capacitance [e/V]\n'
-        '{:.3f}'.format(-fit_2[0] * 2)
+        '{:.5f}\n'.format(-fit_2[0] * 2)
     )
 
     args.output.close()
