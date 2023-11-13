@@ -167,12 +167,10 @@ class ECResults:
     def __init__(
         self,
         ec_parameters: ECParameters,
-        data: NDArray,
-        verbose: bool = False
+        data: NDArray
     ):
         assert data.shape[1] == 5
         self.ec_parameters = ec_parameters
-        self.verbose = verbose
 
         # gather data from directories
         self.data = data
@@ -184,14 +182,10 @@ class ECResults:
 
     @classmethod
     def from_calculations(cls, ec_parameters: ECParameters, directory: pathlib.Path, verbose: bool = False):
-        return cls(ec_parameters, _extract_data_from_directories(ec_parameters, directory, verbose), verbose=verbose)
+        return cls(ec_parameters, _extract_data_from_directories(ec_parameters, directory, verbose))
 
     def __len__(self):
         return self.nelects.shape[0]
-
-    def _outverb(self, *args, **kwargs):
-        if self.verbose:
-            print(*args, **kwargs)
 
     def to_hdf5(self, path: pathlib.Path):
         """Save data in a HDF5 file"""
@@ -201,7 +195,7 @@ class ECResults:
             dset.attrs['version'] = 1
 
     @classmethod
-    def from_hdf5(cls, ec_parameters: ECParameters, path: pathlib.Path, verbose: bool = False):
+    def from_hdf5(cls, ec_parameters: ECParameters, path: pathlib.Path):
         with h5py.File(path) as f:
             if 'ec_results' not in f:
                 raise Exception('invalid h5 file: no `ec_results` dataset')
@@ -210,7 +204,7 @@ class ECResults:
             if 'version' not in dset.attrs or dset.attrs['version'] > 1:
                 raise Exception('unknown version for dataset, use a more recent version of this package!')
 
-            return cls(ec_parameters, dset[:], verbose)
+            return cls(ec_parameters, dset[:])
 
     def estimate_active_fraction(self, shift: float = .0) -> float:
         """Estimate the active fraction from estimates of the surface capacitance.
@@ -224,10 +218,6 @@ class ECResults:
         cap_1 = -fit_1[0]
         fit_2 = numpy.polyfit(work_function, fee, 2)  # grand pot vs work function
         cap_2 = -fit_2[0] * 2
-
-        self._outverb('Capacitance [e/V] = {:.5f} (charge), {:.5f} (grand potential), active fraction: {:.4f}'.format(
-            cap_1, cap_2, cap_2 / cap_1
-        ))
 
         return cap_2 / cap_1
 

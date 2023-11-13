@@ -15,7 +15,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-i', '--h5', default='ec_results.h5', help='H5 file')
     parser.add_argument('-o', '--output', default=sys.stdout, type=argparse.FileType('w'))
-    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose')
 
     g_analysis = parser.add_mutually_exclusive_group()
     g_analysis.add_argument('--pbm', action='store_true', help='Assume PBM approach')
@@ -35,7 +34,7 @@ def main():
     ec_parameters = get_ec_parameters(this_directory)
 
     # extract data
-    ec_results = ECResults.from_hdf5(ec_parameters, args.h5, verbose=args.verbose)
+    ec_results = ECResults.from_hdf5(ec_parameters, args.h5)
 
     # write results
     args.output.write(
@@ -56,17 +55,29 @@ def main():
 
     if args.pbm:
         args.output.write('Grand potential (PBM) [V]\n')
-        numpy.savetxt(args.output, ec_results.compute_fee_pbm(shift=args.shift), delimiter='\t')
+        results = ec_results.compute_fee_pbm(shift=args.shift)
+        numpy.savetxt(args.output, results, delimiter='\t')
     elif args.hbm:
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(args.hbm))
-        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=args.hbm, shift=args.shift), delimiter='\t')
+        results = ec_results.compute_fee_hbm(alpha=args.hbm, shift=args.shift)
+        numpy.savetxt(args.output, results, delimiter='\t')
     elif args.hbm_ideal:
         alpha = ec_results.estimate_active_fraction(shift=args.shift)
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(alpha))
-        numpy.savetxt(args.output, ec_results.compute_fee_hbm(alpha=alpha, shift=args.shift), delimiter='\t')
+        results = ec_results.compute_fee_hbm(alpha=alpha, shift=args.shift)
+        numpy.savetxt(args.output, results, delimiter='\t')
     else:
         args.output.write('Grand potential (HBM, WF=Fermi) [V]\n')
-        numpy.savetxt(args.output, ec_results.compute_fee_hbm_fermi(shift=args.shift), delimiter='\t')
+        results = ec_results.compute_fee_hbm_fermi(shift=args.shift)
+        numpy.savetxt(args.output, results, delimiter='\t')
+
+    # Estimate differential capacitance
+    fit_2 = numpy.polyfit(results[:, 1], results[:, 2], 2)  # grand pot vs work function
+    args.output.write(
+        '\n\n'
+        'Capacitance [e/V]\n'
+        '{:.3f}'.format(-fit_2[0] * 2)
+    )
 
     args.output.close()
 
