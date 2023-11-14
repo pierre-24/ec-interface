@@ -168,6 +168,8 @@ And then another dataset, with:
 + The corresponding grand potential value. By default, it is computed as `free_energy - dn * fermi_energy`.
   
   **Note:** this might not be the correct free electrochemical energy you are looking for, and other methods are available: see [this document](white_paper/potential.pdf) for more information (TL;DR: use either `--pbm` or `--hbm xxx`, where `xxx` is the fraction of active electrons).
+  
+  **Note:** the average potential should be about 0 at PZC. If it is not the case, you might want to use `--shift-avg` to set average to 0.
 
 Please refer to [10.1039/c9cp06684e](https://doi.org/10.1021/10.1039/c9cp06684e) (and reference therein) for different information that you can extract from those data, such as the surface capacitances, the fukui functions, etc.
 

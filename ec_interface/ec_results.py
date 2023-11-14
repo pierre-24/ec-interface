@@ -206,14 +206,19 @@ class ECResults:
 
             return cls(ne_zc, dset[:])
 
-    def estimate_active_fraction(self, shift: float = .0) -> float:
+    def estimate_active_fraction(self, shift_with_avg: bool = False) -> float:
         """Estimate the active fraction from estimates of the surface capacitance.
         """
 
-        work_function = self.vacuum_potentials - self.fermi_energies + shift
+        work_function = self.vacuum_potentials - self.fermi_energies
         dnelect = self.nelects - self.ne_zc
-        index_0 = numpy.where(dnelect == .0)[0][0]
-        fee = self.free_energies - dnelect * self.fermi_energies - self.average_potentials[index_0]
+
+        shift_fee = .0
+        if shift_with_avg:
+            index_0 = numpy.where(dnelect == .0)[0][0]
+            shift_fee = self.average_potentials[index_0]
+
+        fee = self.free_energies - dnelect * self.fermi_energies - shift_fee
 
         fit_1 = numpy.polyfit(work_function, dnelect, 1)  # charge vs work function
         cap_1 = -fit_1[0]
@@ -222,17 +227,22 @@ class ECResults:
 
         return cap_2 / cap_1
 
-    def compute_fee_hbm(self, alpha: float, shift: float = .0):
+    def compute_fee_hbm(self, alpha: float, shift_with_avg: bool = False):
         """Compute the Free electrochemical energy (grand potential) assuming a homogeneous background method
         calculation. `alpha` is the vacuum fraction.
         """
 
-        work_function = self.vacuum_potentials - self.fermi_energies + shift
+        work_function = self.vacuum_potentials - self.fermi_energies
         dnelect = self.nelects - self.ne_zc
 
         # find 0 and corresponding energy
         index_0 = numpy.where(dnelect == .0)[0][0]
         fe0 = self.free_energies[index_0]
+
+        shift_fee = .0
+        if shift_with_avg:
+            index_0 = numpy.where(dnelect == .0)[0][0]
+            shift_fee = self.average_potentials[index_0]
 
         # integrate vacuum potential
         integ_average_pot = []
@@ -246,27 +256,35 @@ class ECResults:
         fee = fe0 + alpha * (self.free_energies - fe0 + dnelect * work_function - integ_average_pot)
 
         # get fee:
-        return numpy.array([dnelect, work_function, fee - self.average_potentials[index_0]]).T
+        return numpy.array([dnelect, work_function, fee - shift_fee]).T
 
-    def compute_fee_hbm_fermi(self, shift: float = .0):
+    def compute_fee_hbm_fermi(self, shift_with_avg: bool = False):
         """Compute the Free electrochemical energy (grand potential) assuming a homogeneous background method
         calculation, and use the Fermi energy as the work function.
         """
 
-        work_function = self.vacuum_potentials - self.fermi_energies + shift
+        work_function = self.vacuum_potentials - self.fermi_energies
         dnelect = self.nelects - self.ne_zc
         fee = self.free_energies - dnelect * self.fermi_energies
-        index_0 = numpy.where(dnelect == .0)[0][0]
 
-        return numpy.array([dnelect, work_function, fee - self.average_potentials[index_0]]).T
+        shift_fee = .0
+        if shift_with_avg:
+            index_0 = numpy.where(dnelect == .0)[0][0]
+            shift_fee = self.average_potentials[index_0]
 
-    def compute_fee_pbm(self, shift: float = .0) -> NDArray:
+        return numpy.array([dnelect, work_function, fee - shift_fee]).T
+
+    def compute_fee_pbm(self, shift_with_avg: bool = False) -> NDArray:
         """Compute the Free electrochemical energy (grand potential) assuming a Poisson-Boltzmann method
         calculation"""
 
-        work_function = self.vacuum_potentials - self.fermi_energies + shift
+        work_function = self.vacuum_potentials - self.fermi_energies
         dnelect = self.nelects - self.ne_zc
         fee = self.free_energies + dnelect * work_function
-        index_0 = numpy.where(dnelect == .0)[0][0]
 
-        return numpy.array([dnelect, work_function, fee - self.average_potentials[index_0]]).T
+        shift_fee = .0
+        if shift_with_avg:
+            index_0 = numpy.where(dnelect == .0)[0][0]
+            shift_fee = self.average_potentials[index_0]
+
+        return numpy.array([dnelect, work_function, fee - shift_fee]).T
