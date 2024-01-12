@@ -1,6 +1,7 @@
 import numpy
+from numpy.typing import NDArray
 
-from typing import List, TextIO, Dict, Tuple
+from typing import List, TextIO, Dict, Tuple, Optional
 
 
 def get_zvals(f: TextIO) -> Dict[str, float]:
@@ -239,3 +240,37 @@ class Geometry:
             nelect += n * zvals[symbol]
 
         return nelect
+
+    def merge_with(self, other: 'Geometry', title: str = '', shift: Optional[NDArray] = None) -> 'Geometry':
+
+        # shift `additional` if any
+        if shift is not None:
+            c = other._cartesian_coordinates + shift
+        else:
+            c = other._cartesian_coordinates
+
+        # merge position, ion types and numbers.
+        positions = numpy.vstack([self._cartesian_coordinates, c])
+        ion_types = self.ion_types.copy() + other.ion_types.copy()
+        ion_numbers = self.ion_numbers.copy() + other.ion_numbers.copy()
+
+        selective_dynamics = None
+
+        # keep selective dynamic if any
+        if self.selective_dynamics is not None or other.selective_dynamics is not None:
+            selective_dynamics = numpy.vstack([
+                self.selective_dynamics
+                if self.selective_dynamics is not None else numpy.ones((len(self), 3), dtype=bool),
+                other.selective_dynamics
+                if other.selective_dynamics is not None else numpy.ones((len(other), 3), dtype=bool)
+            ])
+
+        return Geometry(
+            title,
+            lattice_vectors=self.lattice_vectors.copy(),
+            ion_types=ion_types,
+            ion_numbers=ion_numbers,
+            positions=positions,
+            is_direct=False,
+            selective_dynamics=selective_dynamics
+        )

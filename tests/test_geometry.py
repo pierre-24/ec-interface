@@ -173,3 +173,33 @@ def test_convert_molecular_geometry_with_shift():
 
     vasp_geometry = molecular_geometry.to_vasp(lattice_vectors=lattice, shift_positions=shift)
     assert numpy.allclose(vasp_geometry._cartesian_coordinates, molecular_geometry.positions + shift)
+
+
+def test_merge():
+    f = StringIO()
+    f.write(DUMMY_POSCAR)
+    f.seek(0)
+
+    geometry = Geometry.from_poscar(f)
+
+    lattice = numpy.array([
+        [5., .0, .0],
+        [.0, 5., .0],
+        [.0, .0, 5.],
+    ])
+
+    f = StringIO()
+    f.write(GEOMETRY)
+    f.seek(0)
+    additional = MolecularGeometry.from_xyz(f).to_vasp(lattice_vectors=lattice)
+
+    new_geometry = geometry.merge_with(additional)
+
+    assert numpy.allclose(new_geometry.lattice_vectors, geometry.lattice_vectors)
+    assert new_geometry.ion_types == geometry.ion_types + additional.ion_types
+    assert new_geometry.ion_numbers == geometry.ion_numbers + additional.ion_numbers
+
+    assert numpy.allclose(new_geometry._cartesian_coordinates[:len(geometry)], geometry._cartesian_coordinates)
+    assert numpy.allclose(new_geometry._cartesian_coordinates[len(geometry):], additional._cartesian_coordinates)
+
+    assert numpy.array_equal(new_geometry.selective_dynamics[:len(geometry)], geometry.selective_dynamics)

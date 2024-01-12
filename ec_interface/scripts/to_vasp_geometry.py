@@ -5,35 +5,9 @@ Convert a XYZ file to a VASP geometry
 import argparse
 import sys
 import numpy
-from numpy.typing import NDArray
 
 from ec_interface.molecular_geometry import MolecularGeometry
-
-
-def to_lattice(inp: str) -> NDArray:
-    elmts = inp.split(',')
-    if len(elmts) != 3:
-        raise argparse.ArgumentTypeError('Lattice must have three elements')
-
-    lattice = numpy.zeros((3, 3))
-    for i in range(3):
-        try:
-            lattice[i, i] = float(elmts[i])
-        except ValueError:
-            raise argparse.ArgumentTypeError('Element {} of lattice is not a float'.format(i))
-
-    return lattice
-
-
-def to_vec(inp: str) -> NDArray:
-    elmts = inp.split(',')
-    if len(elmts) != 3:
-        raise argparse.ArgumentTypeError('COM shift must have three elements')
-
-    try:
-        return numpy.array([float(x) for x in elmts])
-    except ValueError:
-        raise argparse.ArgumentTypeError('COM shift must be 3 floats')
+from ec_interface.scripts import get_lattice, get_vec
 
 
 def get_arguments_parser():
@@ -41,8 +15,8 @@ def get_arguments_parser():
 
     parser.add_argument('infile', help='source interface', type=argparse.FileType('r'))
 
-    parser.add_argument('-l', '--lattice', help='lattice vector size', type=to_lattice, default='10,10,10')
-    parser.add_argument('-s', '--shift', help='Shift positions', type=to_vec, default='0,0,0')
+    parser.add_argument('-l', '--lattice', help='lattice vector size', type=get_lattice, default='10,10,10')
+    parser.add_argument('-s', '--shift', help='Shift positions', type=get_vec, default='0,0,0')
     parser.add_argument('--sort', help='sort atoms', action='store_true')
 
     parser.add_argument('-o', '--poscar', type=argparse.FileType('w'), default=sys.stdout)
