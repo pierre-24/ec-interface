@@ -3,8 +3,10 @@ from io import StringIO
 
 import numpy
 import pytest
+import pathlib
 
 from ec_interface.vasp_geometry import Geometry, get_zvals
+from ec_interface.molecular_geometry import MolecularGeometry
 from tests import DUMMY_POSCAR, DUMMY_POTCAR
 
 
@@ -99,3 +101,105 @@ def test_get_zvals():
     assert zvals['Li'] == 1.0
     assert zvals['C'] == 4.0
     assert zvals['O'] == 6.0
+
+
+GEOMETRY = """3
+Test
+H 0.7 0.7 0.0
+O 0.0 0.0 0.0
+H 0.7 -0.7 0.0
+"""
+
+
+def test_read_molecular_geometry():
+    f = StringIO()
+    f.write(GEOMETRY)
+    f.seek(0)
+    molecular_geometry = MolecularGeometry.from_xyz(f)
+
+    assert len(molecular_geometry) == 3
+    assert molecular_geometry.symbols == ['H', 'O', 'H']
+    assert numpy.allclose(molecular_geometry.positions, [[.7, .7, .0], [.0, .0, .0], [0.7, -.7, .0]])
+
+
+def test_convert_molecular_geometry():
+
+    lattice = numpy.array([
+        [20., .0, .0],
+        [.0, 20., .0],
+        [.0, .0, 20.],
+    ])
+
+    with (pathlib.Path(__file__).parent / 'THF.xyz').open() as f:
+        molecular_geometry = MolecularGeometry.from_xyz(f)
+
+    vasp_geometry = molecular_geometry.to_vasp(lattice_vectors=lattice)
+
+    assert numpy.allclose(vasp_geometry.lattice_vectors, lattice)
+    assert molecular_geometry.symbols == vasp_geometry.ions
+    assert numpy.allclose(vasp_geometry._cartesian_coordinates, molecular_geometry.positions)
+
+
+def test_convert_molecular_sort():
+
+    lattice = numpy.array([
+        [20., .0, .0],
+        [.0, 20., .0],
+        [.0, .0, 20.],
+    ])
+
+    f = StringIO()
+    f.write(GEOMETRY)
+    f.seek(0)
+    molecular_geometry = MolecularGeometry.from_xyz(f)
+
+    vasp_geometry = molecular_geometry.to_vasp(lattice_vectors=lattice, sort=True)
+
+    assert vasp_geometry.ions == ['H', 'H', 'O']
+
+
+def test_convert_molecular_geometry_with_shift():
+
+    lattice = numpy.array([
+        [20., .0, .0],
+        [.0, 20., .0],
+        [.0, .0, 20.],
+    ])
+
+    shift = [.2, 5., -1]
+
+    with (pathlib.Path(__file__).parent / 'THF.xyz').open() as f:
+        molecular_geometry = MolecularGeometry.from_xyz(f)
+
+    vasp_geometry = molecular_geometry.to_vasp(lattice_vectors=lattice, shift_positions=shift)
+    assert numpy.allclose(vasp_geometry._cartesian_coordinates, molecular_geometry.positions + shift)
+
+
+def test_merge():
+    f = StringIO()
+    f.write(DUMMY_POSCAR)
+    f.seek(0)
+
+    geometry = Geometry.from_poscar(f)
+
+    lattice = numpy.array([
+        [5., .0, .0],
+        [.0, 5., .0],
+        [.0, .0, 5.],
+    ])
+
+    f = StringIO()
+    f.write(GEOMETRY)
+    f.seek(0)
+    additional = MolecularGeometry.from_xyz(f).to_vasp(lattice_vectors=lattice)
+
+    new_geometry = geometry.merge_with(additional)
+
+    assert numpy.allclose(new_geometry.lattice_vectors, geometry.lattice_vectors)
+    assert new_geometry.ion_types == geometry.ion_types + additional.ion_types
+    assert new_geometry.ion_numbers == geometry.ion_numbers + additional.ion_numbers
+
+    assert numpy.allclose(new_geometry._cartesian_coordinates[:len(geometry)], geometry._cartesian_coordinates)
+    assert numpy.allclose(new_geometry._cartesian_coordinates[len(geometry):], additional._cartesian_coordinates)
+
+    assert numpy.array_equal(new_geometry.selective_dynamics[:len(geometry)], geometry.selective_dynamics)

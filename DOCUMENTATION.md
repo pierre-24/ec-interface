@@ -3,6 +3,7 @@
 1. [Purpose](#purpose)
 2. [Installation](#installation)
 3. [Usage](#usage)
+4. [Geometry manipulation tools](#geometry-manipulation-tools)
 4. [Contribute](#contribute)
 5. [Who?](#who)
 
@@ -80,16 +81,8 @@ You can get info about a slab by runnning `ei-check-slab`:
 ei-check-slab POSCAR
 ```
 Among others, the interslab distance (i.e., the vacuum between two repetition of the slab) should be adjusted (see [10.1021/acs.jctc.5b00170](https://dx.doi.org/10.1021/acs.jctc.5b00170)).
-
-To adjust the interslab distance, you can use `ei-set-vacuum`, which creates a new geometry while enforcing vacuum size (i.e., the size of the last lattice vector).
-For example, to adjust the vacuum size to 25 Å:
-```bash
-mv POSCAR POSCAR_old
-ei-set-vacuum POSCAR_old -v 25.0 -o POSCAR
-```
-The new geometry is saved in `POSCAR`.
-There should be enough vacuum to get an accurate value for the reference (vacuum) potential, which is used to compute the work function.
-Note that the slab is z-centered by the procedure.
+See [below](#geometry-manipulation-tools) for a tool to do so.
+Note that there should be enough vacuum to get an accurate value for the reference (vacuum) potential, which is used to compute the work function.
 
 You can get the number of electron that your system contains with `ei-get-nzc`:
 ```bash
@@ -173,7 +166,7 @@ And then another dataset, with:
 
 Please refer to [10.1039/c9cp06684e](https://doi.org/10.1021/10.1039/c9cp06684e) (and reference therein) for different information that you can extract from those data, such as the surface capacitances, the fukui functions, etc.
 
-### 4. Example
+### 5. Example
 
 See [this archive](https://drive.google.com/file/d/1TkLHsbzXJz_slb6X06r1NbkHko73-fin/view?usp=sharing), which contains an example of calculation on a Li (100) slab using the PBM approach, inspired by [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237).
 It gives the following curve:
@@ -182,6 +175,33 @@ It gives the following curve:
 
 A capacitance of 0.0535 e/V is extracted from this curve using its second derivative.
 Due to the strong anharmonicity (the curve is clearly not symmetric around PZC), the actual value should be a little smaller.
+
+## Geometry manipulation tools
+
+It is generally recommended to use tools such as [ASE](https://wiki.fysik.dtu.dk/ase/) or [pymatgen](https://pymatgen.org/) to manipulate the geometries.
+However, `ec-interface` comes with a few handy tools to perform routine operations.
+Use them with care!
+
++ To adjust the interslab distance, you can use `ei-set-vacuum`, which creates a new geometry while enforcing vacuum size (i.e., the size of the last lattice vector).
+  For example, to adjust the vacuum size to 25 Å:
+  ```bash
+  mv POSCAR POSCAR_old
+  ei-set-vacuum POSCAR_old -v 25.0 -o POSCAR
+  ```
+  The new geometry is saved in `POSCAR`. Note that the slab is z-centered by the procedure.
++ To turn an XYZ geometry into POSCAR, you can use `ei-to-vasp-geometry`:
+  ```bash
+  ei-to-vasp-geometry molecule.xyz --lattice=10,10,10 -o POSCAR
+  ```
+  It comes with a few options, such as `--lattice` to set the lattice vectors and `--sort` to group atoms types (so that it is easier to create the POTCAR).
++ To merge two POSCARs, you can use `ei-merge-poscar`:
+  ```bash
+  ei-to-vasp-geometry POSCAR_cell POSCAR_substrate --shift=5,5,7 -o POSCAR
+  ```
+  It allows to merge two geometries. 
+  The lattice of the first geometry (here `POSCAR_cell`) is used in the final one.
+  The `--shift` option allows to reposition the second molecule in the first.
+  Note that `Selective dynamics` information are kept.
 
 ## Contribute
 
