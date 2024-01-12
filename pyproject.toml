@@ -55,6 +55,7 @@ dev = [
 'ei-make-directories' = 'ec_interface.scripts.make_directories:main'
 'ei-extract-data' = 'ec_interface.scripts.extract_data:main'
 'ei-compute-fee' = 'ec_interface.scripts.compute_fee:main'
+'ei-merge-poscar' = 'ec_interface.scripts.merge_poscar:main'
 'ei-to-vasp-geometry' = 'ec_interface.scripts.to_vasp_geometry:main'
 'ei-xy-average' = 'ec_interface.scripts.make_xy_average:main'
 
