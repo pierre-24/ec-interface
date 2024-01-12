@@ -156,6 +156,7 @@ def test_convert_molecular_sort():
     vasp_geometry = molecular_geometry.to_vasp(lattice_vectors=lattice, sort=True)
 
     assert vasp_geometry.ions == ['H', 'H', 'O']
+    assert numpy.allclose(vasp_geometry.cartesian_coordinates(), [[.7, .7, .0], [0.7, -.7, .0], [.0, .0, .0]])
 
 
 def test_convert_molecular_geometry_with_shift():

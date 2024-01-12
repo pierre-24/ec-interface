@@ -61,7 +61,7 @@ class MolecularGeometry:
         if sort:
             sorted_symbols = sorted(zip(symbols, range(len(self))))
             symbols = [x[0] for x in sorted_symbols]
-            positions[list(x[1] for x in sorted_symbols)] = positions
+            positions = positions[list(x[1] for x in sorted_symbols), :]
 
         # count ions
         ions_types, ions_numbers = vasp_geometry.count_ions(symbols)
