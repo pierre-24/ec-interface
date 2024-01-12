@@ -1,6 +1,6 @@
 import numpy
 
-from typing import List, TextIO, Dict
+from typing import List, TextIO, Dict, Tuple
 
 
 def get_zvals(f: TextIO) -> Dict[str, float]:
@@ -21,6 +21,32 @@ def get_zvals(f: TextIO) -> Dict[str, float]:
             zvals[current_element] = value
 
     return zvals
+
+
+def count_ions(symbols: List[str]) -> Tuple[List[str], List[int]]:
+    """Count ions in VASP style (i.e., get a pair `ion_types, ion_numbers` from `symbols`)
+    """
+
+    ions_types = []
+    ions_numbers = []
+
+    if len(symbols) > 0:
+        current_ion = symbols[0]
+        current_number = 1
+        for symbol in symbols[1:]:
+            if symbol == current_ion:
+                current_number += 1
+            else:
+                ions_types.append(current_ion)
+                ions_numbers.append(current_number)
+                current_ion = symbol
+                current_number = 1
+
+        # add last:
+        ions_types.append(current_ion)
+        ions_numbers.append(current_number)
+
+    return ions_types, ions_numbers
 
 
 class Geometry:

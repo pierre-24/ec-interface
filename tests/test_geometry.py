@@ -3,8 +3,10 @@ from io import StringIO
 
 import numpy
 import pytest
+import pathlib
 
 from ec_interface.vasp_geometry import Geometry, get_zvals
+from ec_interface.molecular_geometry import MolecularGeometry
 from tests import DUMMY_POSCAR, DUMMY_POTCAR
 
 
@@ -99,3 +101,75 @@ def test_get_zvals():
     assert zvals['Li'] == 1.0
     assert zvals['C'] == 4.0
     assert zvals['O'] == 6.0
+
+
+GEOMETRY = """3
+Test
+H 0.7 0.7 0.0
+O 0.0 0.0 0.0
+H 0.7 -0.7 0.0
+"""
+
+
+def test_read_molecular_geometry():
+    f = StringIO()
+    f.write(GEOMETRY)
+    f.seek(0)
+    molecular_geometry = MolecularGeometry.from_xyz(f)
+
+    assert len(molecular_geometry) == 3
+    assert molecular_geometry.symbols == ['H', 'O', 'H']
+    assert numpy.allclose(molecular_geometry.positions, [[.7, .7, .0], [.0, .0, .0], [0.7, -.7, .0]])
+
+
+def test_convert_molecular_geometry():
+
+    lattice = numpy.array([
+        [20., .0, .0],
+        [.0, 20., .0],
+        [.0, .0, 20.],
+    ])
+
+    with (pathlib.Path(__file__).parent / 'THF.xyz').open() as f:
+        molecular_geometry = MolecularGeometry.from_xyz(f)
+
+    vasp_geometry = molecular_geometry.to_vasp(lattice_vectors=lattice)
+
+    assert numpy.allclose(vasp_geometry.lattice_vectors, lattice)
+    assert molecular_geometry.symbols == vasp_geometry.ions
+    assert numpy.allclose(vasp_geometry._cartesian_coordinates, molecular_geometry.positions)
+
+
+def test_convert_molecular_sort():
+
+    lattice = numpy.array([
+        [20., .0, .0],
+        [.0, 20., .0],
+        [.0, .0, 20.],
+    ])
+
+    f = StringIO()
+    f.write(GEOMETRY)
+    f.seek(0)
+    molecular_geometry = MolecularGeometry.from_xyz(f)
+
+    vasp_geometry = molecular_geometry.to_vasp(lattice_vectors=lattice, sort=True)
+
+    assert vasp_geometry.ions == ['H', 'H', 'O']
+
+
+def test_convert_molecular_geometry_with_shift():
+
+    lattice = numpy.array([
+        [20., .0, .0],
+        [.0, 20., .0],
+        [.0, .0, 20.],
+    ])
+
+    shift = [.2, 5., -1]
+
+    with (pathlib.Path(__file__).parent / 'THF.xyz').open() as f:
+        molecular_geometry = MolecularGeometry.from_xyz(f)
+
+    vasp_geometry = molecular_geometry.to_vasp(lattice_vectors=lattice, shift_positions=shift)
+    assert numpy.allclose(vasp_geometry._cartesian_coordinates, molecular_geometry.positions + shift)
