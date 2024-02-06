@@ -139,6 +139,15 @@ Note that you can also use `ei-xy-average` to get the same information:
 ei-xy-average CHGCAR > chg.csv
 ```
 
+For `CHGCAR`, to count the electrons in certain regions, you can also use:
+
+```bash
+ei-charge-intg CHGCAR
+```
+
+This program will select regions (in the z-direction) of low and high electron occupations and integrate over those.
+Option `-t` (threshold) allow to change the threshold for the detection of low/high regions.
+
 ### 4. Computing the free electrochemical energy (FEE)
 
 Finally, run:

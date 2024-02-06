@@ -73,7 +73,7 @@ def _extract_data(
     elif z_vacuum_center_index >= nZ:
         z_vacuum_center_index -= nZ
 
-    _outverb('  → Selected vacuum area: z = [{:.3f}, {:.3f}]'.format(
+    _outverb('  → Selected vacuum area: z ∈ [{:.3f},{:.3f})'.format(
         z_vacuum_min_index * z_inc, z_vacuum_max_index * z_inc))
 
     # determine reference potential as the value of the local potential at the vacuum center

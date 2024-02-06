@@ -58,6 +58,7 @@ dev = [
 'ei-merge-poscar' = 'ec_interface.scripts.merge_poscar:main'
 'ei-to-vasp-geometry' = 'ec_interface.scripts.to_vasp_geometry:main'
 'ei-xy-average' = 'ec_interface.scripts.make_xy_average:main'
+'ei-charge-intg' = 'ec_interface.scripts.integrate_xy_average:main'
 
 [tool.setuptools]
 packages = ['ec_interface', 'ec_interface.scripts']
