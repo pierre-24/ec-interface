@@ -44,7 +44,7 @@ def main():
     # sum
     print('! compute results')
     for i in range(1, len(regions)):
-        beg, end = regions[i-1], regions[i]
+        beg, end = regions[i - 1], regions[i]
         zbeg, zend = beg / nZ * z_max, end / nZ * z_max
 
         integ = xy_average[beg:end].sum()
@@ -54,5 +54,3 @@ def main():
             zend,
             integ
         ))
-
-
