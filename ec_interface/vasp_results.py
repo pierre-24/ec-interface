@@ -1,7 +1,6 @@
 import pathlib
 import h5py
 import numpy
-import math
 
 from numpy.typing import NDArray
 from typing import TextIO
@@ -46,14 +45,31 @@ class VaspResultGrid:
         points = []
 
         remaining_lines = f.readlines()
+        nlines = int(numpy.ceil(num_points / 5))
 
-        for i in range(int(math.ceil(num_points / 5))):
+        for i in range(nlines):
             points.extend(float(x) for x in remaining_lines[i].split())
 
         # data are stored in the format (Z, Y, X), so it is reversed here:
         grid_data = numpy.array(points).reshape(tuple(reversed(grid_size))).T
 
         return cls(geometry, grid_data)
+
+    def to_file(self, f: TextIO) -> None:
+        self.geometry.to_poscar(f)
+
+        f.write('\n {:4} {:4} {:4}\n'.format(*self.grid_data.shape))
+
+        # use numpy.savetxt() for the rest, as it is (wayyyyy!!) faster
+        num_points = self.grid_data.shape[0] * self.grid_data.shape[1] * self.grid_data.shape[2]
+
+        num_lines = int(numpy.ceil(num_points / 5))
+
+        data_to_write = numpy.zeros(num_lines * 5)
+        data_to_write[0:num_points] = self.grid_data.T.ravel()
+        data_to_write = data_to_write.reshape((num_lines, 5))
+
+        numpy.savetxt(f, data_to_write, fmt='% .10e')
 
     def xy_average(self) -> NDArray:
         """Get an average of the value along Z"""

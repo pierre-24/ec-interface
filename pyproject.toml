@@ -49,16 +49,17 @@ dev = [
 "Source" = "https://github.com/pierre-24/ec-interface/"
 
 [project.scripts]
+'ei-charge-intg' = 'ec_interface.scripts.integrate_xy_average:main'
 'ei-check-slab' = 'ec_interface.scripts.check_slab:main'
-'ei-get-nzc' = 'ec_interface.scripts.get_nzc:main'
-'ei-set-vacuum' = 'ec_interface.scripts.set_vacuum:main'
-'ei-make-directories' = 'ec_interface.scripts.make_directories:main'
-'ei-extract-data' = 'ec_interface.scripts.extract_data:main'
 'ei-compute-fee' = 'ec_interface.scripts.compute_fee:main'
+'ei-extract-data' = 'ec_interface.scripts.extract_data:main'
+'ei-fukui' = 'ec_interface.scripts.fukui:main'
+'ei-get-nzc' = 'ec_interface.scripts.get_nzc:main'
+'ei-make-directories' = 'ec_interface.scripts.make_directories:main'
 'ei-merge-poscar' = 'ec_interface.scripts.merge_poscar:main'
+'ei-set-vacuum' = 'ec_interface.scripts.set_vacuum:main'
 'ei-to-vasp-geometry' = 'ec_interface.scripts.to_vasp_geometry:main'
 'ei-xy-average' = 'ec_interface.scripts.make_xy_average:main'
-'ei-charge-intg' = 'ec_interface.scripts.integrate_xy_average:main'
 
 [tool.setuptools]
 packages = ['ec_interface', 'ec_interface.scripts']

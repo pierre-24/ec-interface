@@ -185,10 +185,10 @@ It gives the following curve:
 A capacitance of 0.0535 e/V is extracted from this curve using its second derivative.
 Due to the strong anharmonicity (the curve is clearly not symmetric around PZC), the actual value should be a little smaller.
 
-## Geometry manipulation tools
+## Useful tools
 
-It is generally recommended to use tools such as [ASE](https://wiki.fysik.dtu.dk/ase/) or [pymatgen](https://pymatgen.org/) to manipulate the geometries.
-However, `ec-interface` comes with a few handy tools to perform routine operations.
+To manipulate the geometries, it is generally recommended to use tools such as [ASE](https://wiki.fysik.dtu.dk/ase/) or [pymatgen](https://pymatgen.org/) to manipulate the geometries.
+However, `ec-interface` comes with a few handy (tough simple) tools to perform routine operations.
 Use them with care!
 
 + To adjust the interslab distance, you can use `ei-set-vacuum`, which creates a new geometry while enforcing vacuum size (i.e., the size of the last lattice vector).
@@ -211,6 +211,18 @@ Use them with care!
   The lattice of the first geometry (here `POSCAR_cell`) is used in the final one.
   The `--shift` option allows to reposition the second molecule in the first.
   Note that `Selective dynamics` information are kept.
+
+Furthermore, since the idea is to compute the properties for different number of electrons, an insightful byproduct are the [Fukui functions](https://en.wikipedia.org/wiki/Fukui_function).
+In particular, $f(r) = \rho_{N+\Delta N}(r)-\rho_n(r)$, which can be computed from [`CHGCAR`](https://www.vasp.at/wiki/index.php/CHGCAR) files with:
+
+```bash
+ei-fukui EC_20.000/CHGCAR EC_20.050/CHGCAR -d 0.05 -o CHGCAR_fukui
+```
+
+where the `-d` argument gives the value of $\Delta N$, the first `CHGCAR` is the reference density ($\rho_N(r)$), and the second is the one with an additional amount of electrons ($\rho_{N+\Delta N}(r)$).
+If the `-s` option is used, a [symmetric difference formula](https://en.wikipedia.org/wiki/Numerical_differentiation) is used, and the first file must contain $\rho_{N-\Delta N}(r)$.
+The `CHGCAR_fukui` file contains the Fukui function for $\rho_N(r)$. 
+It might be visualized with the [VESTA](https://jp-minerals.org/vesta/en/) software.
 
 ## Contribute
 
