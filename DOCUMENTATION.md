@@ -3,9 +3,9 @@
 1. [Purpose](#purpose)
 2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Geometry manipulation tools](#geometry-manipulation-tools)
-4. [Contribute](#contribute)
-5. [Who?](#who)
+4. [Geometry manipulation tools](#useful-tools)
+5. [Contribute](#contribute)
+6. [Who?](#who)
 
 ## Purpose
 
@@ -69,7 +69,7 @@ To perform an EC interface calculation, you need the following files in the same
    Refer to [the VASP manual](https://www.vasp.at/wiki/index.php/The_VASP_Manual), [10.1021/acs.jctc.1c01237](https://doi.org/10.1021/acs.jctc.1c01237), and the [VASPsol](https://github.com/henniggroup/VASPsol/blob/master/docs/USAGE.md) documentation for more details on these parameters and their values.
    
    You might also want to increase the value of `NELM` (it may be more difficult to converge those calculations, especially with PCM), `NBANDS` (all bands might get parrtially occupied as you add electrons), and `LREAL` (as VASP is generally complaining).
-2. A `POSCAR` file (which contains a slab geometry) and its corresponding `POTCAR`.
+2. A `POSCAR` file (which contains a slab geometry) and its corresponding `POTCAR` (that you can generate with `ei-create-potcar`, see below).
    [PAW potentials](https://www.vasp.at/wiki/index.php/Available_PAW_potentials) are strongly recommended.
 
    **It is assumed that the C lattice vector matches the Z axis.**
@@ -83,6 +83,13 @@ ei-check-slab POSCAR
 Among others, the interslab distance (i.e., the vacuum between two repetition of the slab) should be adjusted (see [10.1021/acs.jctc.5b00170](https://dx.doi.org/10.1021/acs.jctc.5b00170)).
 See [below](#geometry-manipulation-tools) for a tool to do so.
 Note that there should be enough vacuum to get an accurate value for the reference (vacuum) potential, which is used to compute the work function.
+
+You can generate the `POTCAR` file using `ei-create-potcar`:
+````bash
+ei-create-potcar POSCAR -p /path/to/potpaw/
+````
+where `/path/to/potpaw` is the directory containing [all PAW potentials](https://www.vasp.at/wiki/index.php/Available_PAW_potentials) (`H`, `H_AE`, etc).
+If your `POSCAR` contains atoms for which you want to use an alternate potential, use `-P` with a comma separated list of `symbol=potential`, *e.g.*, `-P Li=Li_sv,C=C_h`.
 
 You can get the number of electron that your system contains with `ei-get-nzc`:
 ```bash
@@ -219,10 +226,10 @@ In particular, $f(r) = \rho_{N+\Delta N}(r)-\rho_n(r)$, which can be computed fr
 ei-fukui EC_20.000/CHGCAR EC_20.050/CHGCAR -d 0.05 -o CHGCAR_fukui
 ```
 
-where the `-d` argument gives the value of $\Delta N$, the first `CHGCAR` is the reference density ($\rho_N(r)$), and the second is the one with an additional amount of electrons ($\rho_{N+\Delta N}(r)$).
-If the `-s` option is used, a [symmetric difference formula](https://en.wikipedia.org/wiki/Numerical_differentiation) is used, and the first file must contain $\rho_{N-\Delta N}(r)$.
-The `CHGCAR_fukui` file contains the Fukui function for $\rho_N(r)$. 
-It might be visualized with the [VESTA](https://jp-minerals.org/vesta/en/) software.
+where the `-d` argument gives the value of $\Delta N$, the first `CHGCAR` is the reference density ( $\rho_N(r)$ ), and the second is the one with an additional amount of electrons ( $\rho_{N+\Delta N}(r)$ ).
+If the `-s` option is used, a [symmetric difference formula](https://en.wikipedia.org/wiki/Numerical_differentiation) is used, and the first file must then contain $\rho_{N-\Delta N}(r)$.
+In both case, the resulting `CHGCAR_fukui` file contains the Fukui function for $\rho_N(r)$. 
+It might be visualized with, *e.g.*, the [VESTA](https://jp-minerals.org/vesta/en/) software.
 
 ## Contribute
 

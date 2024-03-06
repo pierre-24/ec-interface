@@ -52,6 +52,7 @@ dev = [
 'ei-charge-intg' = 'ec_interface.scripts.integrate_xy_average:main'
 'ei-check-slab' = 'ec_interface.scripts.check_slab:main'
 'ei-compute-fee' = 'ec_interface.scripts.compute_fee:main'
+'ei-create-potcar' = 'ec_interface.scripts.create_potcar:main'
 'ei-extract-data' = 'ec_interface.scripts.extract_data:main'
 'ei-fukui' = 'ec_interface.scripts.fukui:main'
 'ei-get-nzc' = 'ec_interface.scripts.get_nzc:main'
