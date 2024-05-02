@@ -56,6 +56,7 @@ dev = [
 'ei-extract-data' = 'ec_interface.scripts.extract_data:main'
 'ei-fukui' = 'ec_interface.scripts.fukui:main'
 'ei-get-nzc' = 'ec_interface.scripts.get_nzc:main'
+'ei-get-wf' = 'ec_interface.scripts.get_wf:main'
 'ei-make-directories' = 'ec_interface.scripts.make_directories:main'
 'ei-merge-poscar' = 'ec_interface.scripts.merge_poscar:main'
 'ei-set-vacuum' = 'ec_interface.scripts.set_vacuum:main'
