@@ -13,6 +13,7 @@ def get_arguments_parser():
     parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument('infile', help='source', type=argparse.FileType('r'))
+    parser.add_argument('-a', '--axis', default=2, type=int)
     parser.add_argument('-o', '--output', default=sys.stdout, type=argparse.FileType('w'))
 
     return parser
@@ -23,9 +24,10 @@ def main():
 
     data = VaspResultGrid.from_file(args.infile)
 
-    nZ = data.grid_data.shape[2]
-    z_max = data.geometry.lattice_vectors[2, 2]
-    z_values = numpy.arange(nZ) / nZ * z_max
-    xy_average = data.xy_average()
+    N = data.grid_data.shape[args.axis]
+    axis_max = data.geometry.lattice_vectors[args.axis, args.axis]
+    values = numpy.arange(N) / N * axis_max
+    planar_average = data.planar_average(args.axis)
 
-    numpy.savetxt(args.output, numpy.array([z_values, xy_average, xy_average / nZ]).T, delimiter='\t')
+    numpy.savetxt(
+        args.output, numpy.array([values, planar_average.values, planar_average.values / N]).T, delimiter='\t')

@@ -48,30 +48,15 @@ def _extract_data(
     z_max = data_charge_density.geometry.lattice_vectors[2, 2]
     z_inc = z_max / nZ
 
-    xy_average_charge_density = data_charge_density.xy_average()
-    z_min_charge_density_index = numpy.argmin(xy_average_charge_density)
+    xy_average_charge_density = data_charge_density.xy_planar_average()
+    z_min_charge_density_index = xy_average_charge_density.argmin()
     z_charge_density_value = xy_average_charge_density[z_min_charge_density_index]
 
     _outverb('  → Charge density is minimal at z = {:.3f} (n.V = {:.3e} [e Å³])'.format(
         z_min_charge_density_index * z_inc, z_charge_density_value))
 
     # determine a vacuum area, and a vacuum center
-    z_vacuum_max_index = z_vacuum_min_index = z_min_charge_density_index
-
-    while numpy.abs(
-            xy_average_charge_density[
-                z_vacuum_max_index - int(z_vacuum_max_index / nZ) * nZ] - z_charge_density_value
-    ) < 1e-3:
-        z_vacuum_max_index += 1
-
-    while numpy.abs(xy_average_charge_density[z_vacuum_min_index] - z_charge_density_value) < 1e-3:
-        z_vacuum_min_index -= 1
-
-    z_vacuum_center_index = int((z_vacuum_min_index + z_vacuum_max_index) / 2)
-    if z_vacuum_center_index < 0:
-        z_vacuum_center_index += nZ
-    elif z_vacuum_center_index >= nZ:
-        z_vacuum_center_index -= nZ
+    z_vacuum_min_index, z_vacuum_center_index, z_vacuum_max_index = xy_average_charge_density.get_vacuum()
 
     _outverb('  → Selected vacuum area: z ∈ [{:.3f},{:.3f})'.format(
         z_vacuum_min_index * z_inc, z_vacuum_max_index * z_inc))
@@ -83,12 +68,12 @@ def _extract_data(
         data_local_potential = VaspLocPot.from_file(f)
     _outverb('OK')
 
-    xy_average_local_potential = data_local_potential.xy_average()
+    xy_average_local_potential = data_local_potential.xy_planar_average()
     vacuum_potential = xy_average_local_potential[z_vacuum_center_index]
     _outverb('  → Vacuum potential (z={:.3f}) = {:.3f} [eV]'.format(
         z_vacuum_center_index * z_inc, vacuum_potential))
 
-    average_potential = numpy.sum(xy_average_local_potential) / nZ
+    average_potential = xy_average_local_potential.sum() / nZ
     _outverb('  → Average potential in cell = {:.3f} [eV]'.format(average_potential))
 
     _outverb('  → Corresponding work function = {:.3f} [V]'.format(vacuum_potential - data_h5.fermi_energy))
@@ -102,12 +87,12 @@ def _extract_data(
             f.write('\n'.join(
                 '{:.5f}\t{:.5e}\t{:.5e}\t{:.5e}'.format(z, chg, chg / nZ, chgs / nZ)
                 for z, chg, chgs in
-                zip(z_values, xy_average_charge_density, numpy.cumsum(xy_average_charge_density))
+                zip(z_values, xy_average_charge_density.values, numpy.cumsum(xy_average_charge_density.values))
             ))
 
         with (directory / 'local_potential_xy_avg.csv').open('w') as f:
             f.write('\n'.join(
-                '{:.5f}\t{:.5f}'.format(z, chg) for z, chg in zip(z_values, xy_average_local_potential)
+                '{:.5f}\t{:.5f}'.format(z, chg) for z, chg in zip(z_values, xy_average_local_potential.values)
             ))
 
         _outverb('OK')
