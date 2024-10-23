@@ -15,6 +15,7 @@ def main():
     parser.add_argument('-p', '--parameters', default=INPUT_NAME, type=get_ec_parameters)
     parser.add_argument('-i', '--h5', default=H5_NAME, help='H5 file')
     parser.add_argument('-o', '--output', default=sys.stdout, type=argparse.FileType('w'))
+    parser.add_argument('-r', '--ref', default=4.5, type=float, help='Reference value')
 
     g_analysis = parser.add_mutually_exclusive_group()
     g_analysis.add_argument('--pbm', action='store_true', help='Assume PBM approach')
@@ -47,25 +48,26 @@ def main():
     args.output.write(
         '\n\n'  # just skip a few lines so that it is another dataset
         'Charge [e]\t'
-        'Work function [V]{}\t'.format(' (shifted with vacuum)' if args.shift_avg else '')
+        'Work function{} [V]\t'.format(' (shifted with vacuum)' if args.shift_avg else '') + \
+        'Potential vs ref [V]\t'
     )
 
     if args.pbm:
         args.output.write('Grand potential (PBM) [V]\n')
-        results = ec_results.compute_fee_pbm(shift_with_avg=args.shift_avg)
+        results = ec_results.compute_fee_pbm(shift_with_avg=args.shift_avg, ref=args.ref)
         numpy.savetxt(args.output, results, delimiter='\t')
     elif args.hbm:
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(args.hbm))
-        results = ec_results.compute_fee_hbm(alpha=args.hbm, shift_with_avg=args.shift_avg)
+        results = ec_results.compute_fee_hbm(alpha=args.hbm, shift_with_avg=args.shift_avg, ref=args.ref)
         numpy.savetxt(args.output, results, delimiter='\t')
     elif args.hbm_ideal:
         alpha = ec_results.estimate_active_fraction(shift_with_avg=args.shift_avg)
         args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(alpha))
-        results = ec_results.compute_fee_hbm(alpha=alpha, shift_with_avg=args.shift_avg)
+        results = ec_results.compute_fee_hbm(alpha=alpha, shift_with_avg=args.shift_avg, ref=args.ref)
         numpy.savetxt(args.output, results, delimiter='\t')
     else:
         args.output.write('Grand potential (HBM, WF=Fermi) [V]\n')
-        results = ec_results.compute_fee_hbm_fermi(shift_with_avg=args.shift_avg)
+        results = ec_results.compute_fee_hbm_fermi(shift_with_avg=args.shift_avg, ref=args.ref)
         numpy.savetxt(args.output, results, delimiter='\t')
 
     # Estimate differential capacitance

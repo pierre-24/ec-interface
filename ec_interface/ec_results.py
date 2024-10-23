@@ -212,7 +212,7 @@ class ECResults:
 
         return cap_2 / cap_1
 
-    def compute_fee_hbm(self, alpha: float, shift_with_avg: bool = False):
+    def compute_fee_hbm(self, alpha: float, shift_with_avg: bool = False, ref: float = 4.5):
         """Compute the Free electrochemical energy (grand potential) assuming a homogeneous background method
         calculation. `alpha` is the vacuum fraction.
         """
@@ -241,9 +241,9 @@ class ECResults:
         fee = fe0 + alpha * (self.free_energies - fe0 + dnelect * work_function - integ_average_pot)
 
         # get fee:
-        return numpy.array([dnelect, work_function, fee - shift_fee]).T
+        return numpy.array([dnelect, work_function, work_function - ref, fee - shift_fee]).T
 
-    def compute_fee_hbm_fermi(self, shift_with_avg: bool = False):
+    def compute_fee_hbm_fermi(self, shift_with_avg: bool = False, ref: float = 4.5):
         """Compute the Free electrochemical energy (grand potential) assuming a homogeneous background method
         calculation, and use the Fermi energy as the work function.
         """
@@ -257,9 +257,9 @@ class ECResults:
             index_0 = numpy.where(dnelect == .0)[0][0]
             shift_fee = self.average_potentials[index_0]
 
-        return numpy.array([dnelect, work_function, fee - shift_fee]).T
+        return numpy.array([dnelect, work_function, work_function - ref, fee - shift_fee]).T
 
-    def compute_fee_pbm(self, shift_with_avg: bool = False) -> NDArray:
+    def compute_fee_pbm(self, shift_with_avg: bool = False, ref: float = 4.5) -> NDArray:
         """Compute the Free electrochemical energy (grand potential) assuming a Poisson-Boltzmann method
         calculation"""
 
@@ -272,4 +272,4 @@ class ECResults:
             index_0 = numpy.where(dnelect == .0)[0][0]
             shift_fee = self.average_potentials[index_0]
 
-        return numpy.array([dnelect, work_function, fee - shift_fee]).T
+        return numpy.array([dnelect, work_function, work_function - ref, fee - shift_fee]).T

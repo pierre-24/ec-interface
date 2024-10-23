@@ -173,7 +173,8 @@ At the end of the procedure, a `results.csv` file (containing tab-separated data
 
 And then another dataset, with:
 + The charge added or removed to the system;
-+ The (absolute) work function, as `vacuum_potential - fermi_energy` (you might want to shift those value w.r.t. a reference such as the SHE);
++ The (absolute) work function, as `vacuum_potential - fermi_energy`;
++ The relative potential versus reference, `work_function - ref` (`ref=4.5V` by default, your can change this value with `--ref`);
 + The corresponding grand potential value. By default, it is computed as `free_energy - dn * fermi_energy`.
   
   **Note:** this might not be the correct free electrochemical energy you are looking for, and other methods are available: see [this document](white_paper/potential.pdf) for more information (TL;DR: use either `--pbm` or `--hbm xxx`, where `xxx` is the fraction of active electrons).
