@@ -71,7 +71,7 @@ def main():
         numpy.savetxt(args.output, results, delimiter='\t')
 
     # Estimate differential capacitance
-    fit_2 = numpy.polyfit(results[:, 1], results[:, 2], 2)  # grand pot vs work function
+    fit_2 = numpy.polyfit(results[:, 1], results[:, 3], 2)  # grand pot vs work function
     args.output.write(
         '\n\n'
         'Capacitance [e/V]\n'
