@@ -48,8 +48,8 @@ def main():
     args.output.write(
         '\n\n'  # just skip a few lines so that it is another dataset
         'Charge [e]\t'
-        'Work function{} [V]\t'.format(' (shifted with vacuum)' if args.shift_avg else '') + \
-        'Potential vs ref [V]\t'
+        'Work function{} [V]\t'
+        'Potential vs ref [V]\t'.format(' (shifted with vacuum)' if args.shift_avg else '')
     )
 
     if args.pbm:
