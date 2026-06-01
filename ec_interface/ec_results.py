@@ -233,7 +233,7 @@ class ECResults:
         integ_average_pot = []
         for i in range(len(self.vacuum_potentials)):
             b0, b1 = i if i < index_0 else index_0, (index_0 if i < index_0 else i) + 1
-            integ_average_pot.append((-1 if i < index_0 else 1) * numpy.trapz(
+            integ_average_pot.append((-1 if i < index_0 else 1) * numpy.trapezoid(
                 self.vacuum_potentials[b0:b1],
                 dnelect[b0:b1]
             ))
