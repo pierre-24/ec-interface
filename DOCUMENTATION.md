@@ -249,7 +249,7 @@ python -m venv virtualenv
 source venv/bin/activate
 
 # install also dev dependencies
-make install
+make install-dev
 ```
 
 ### Tips to contribute
