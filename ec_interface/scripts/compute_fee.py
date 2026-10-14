@@ -47,26 +47,26 @@ def main():
     # Compute FEE:
     args.output.write(
         '\n\n'  # just skip a few lines so that it is another dataset
-        'Charge [e]\t'
+        'Diff vs ZC [e]\t'
         'Work function{} [V]\t'
         'Potential vs ref [V]\t'.format(' (shifted with vacuum)' if args.shift_avg else '')
     )
 
     if args.pbm:
-        args.output.write('Grand potential (PBM) [V]\n')
+        args.output.write('Grand potential (PBM) [eV]\n')
         results = ec_results.compute_fee_pbm(shift_with_avg=args.shift_avg, ref=args.ref)
         numpy.savetxt(args.output, results, delimiter='\t')
     elif args.hbm:
-        args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(args.hbm))
+        args.output.write('Grand potential (HBM alpha={:.4f}) [eV]\n'.format(args.hbm))
         results = ec_results.compute_fee_hbm(alpha=args.hbm, shift_with_avg=args.shift_avg, ref=args.ref)
         numpy.savetxt(args.output, results, delimiter='\t')
     elif args.hbm_ideal:
         alpha = ec_results.estimate_active_fraction(shift_with_avg=args.shift_avg)
-        args.output.write('Grand potential (HBM, alpha={:.4f}) [V]\n'.format(alpha))
+        args.output.write('Grand potential (HBM alpha={:.4f}) [eV]\n'.format(alpha))
         results = ec_results.compute_fee_hbm(alpha=alpha, shift_with_avg=args.shift_avg, ref=args.ref)
         numpy.savetxt(args.output, results, delimiter='\t')
     else:
-        args.output.write('Grand potential (HBM, WF=Fermi) [V]\n')
+        args.output.write('Grand potential (HBM WF=Fermi) [eV]\n')
         results = ec_results.compute_fee_hbm_fermi(shift_with_avg=args.shift_avg, ref=args.ref)
         numpy.savetxt(args.output, results, delimiter='\t')
 

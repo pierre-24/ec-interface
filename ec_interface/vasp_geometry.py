@@ -102,7 +102,7 @@ class Geometry:
             r += 'Direct\n'
             p = self._direct_coordinates
         else:
-            r += 'Carthesian\n'
+            r += 'Cartesian\n'
             p = self._cartesian_coordinates
 
         for i in range(len(self)):
